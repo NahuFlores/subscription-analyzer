@@ -1,0 +1,209 @@
+/* Particle Effect Styles */
+
+.particle-hero {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: #0f172a;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+#particle-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* Navigation */
+.hero-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-name {
+    color: white;
+    font-weight: 600;
+    font-size: 1.125rem;
+    letter-spacing: 0.025em;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: white;
+}
+
+/* Hero Content */
+.hero-content {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    pointer-events: none;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+}
+
+.hero-badge span {
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 12vw, 9rem);
+    font-weight: 800;
+    line-height: 0.9;
+    background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.05em;
+    margin-bottom: 2rem;
+    mix-blend-mode: difference;
+}
+
+.hero-description {
+    max-width: 42rem;
+    margin: 0 auto 3rem;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+.hero-cta {
+    pointer-events: auto;
+}
+
+.btn-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-glow:hover::before {
+    opacity: 0.1;
+}
+
+.btn-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.btn-primary:hover .btn-arrow {
+    transform: translateX(4px);
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.scroll-indicator span {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Features Section */
+.features-section {
+    background: #1e293b;
+    padding: 6rem 2rem;
+}
+
+.features-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+}

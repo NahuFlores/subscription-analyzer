@@ -1,0 +1,309 @@
+/* Magic Indicator Navbar Styles */
+
+:root {
+    --nav-height: 70px;
+    --nav-bg: rgba(255, 255, 255, 0.08);
+    --nav-border: rgba(255, 255, 255, 0.18);
+    --indicator-color: #6366f1;
+    --text-color: rgba(255, 255, 255, 0.8);
+    --text-hover: rgba(255, 255, 255, 1);
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main Navbar */
+.magic-navbar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+
+    /* Padding for pill effect */
+    padding: 0;
+
+    /* Start transparent */
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
+    box-shadow: none;
+
+    /* AnimeJS will handle transitions */
+}
+
+/* Scrolled state - Pill-shaped Liquid Glass */
+.magic-navbar-container.scrolled {
+    /* Padding will be animated by AnimeJS */
+    padding: 1rem 0;
+}
+
+#magic-navbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    height: var(--nav-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+    /* Pill shape - starts invisible */
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+
+    /* AnimeJS will handle transitions */
+}
+
+/* Pill-shaped nav when scrolled */
+.magic-navbar-container.scrolled #magic-navbar {
+    /* Liquid Glass Background */
+    background: var(--nav-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+    /* Pill Shape */
+    border-radius: 16px;
+    border: 1px solid var(--nav-border);
+
+    /* Enhanced shadows for depth */
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+
+    /* Slightly smaller width for pill effect */
+    max-width: 1100px;
+    padding: 0.75rem 2rem;
+    height: auto;
+}
+
+/* Logo */
+.magic-nav-logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 2;
+}
+
+.morph-logo {
+    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+    transition: filter 0.3s ease;
+}
+
+.magic-nav-logo:hover .morph-logo {
+    filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8));
+    transform: scale(1.1);
+}
+
+.magic-nav-logo:hover {
+    opacity: 1;
+}
+
+/* Desktop Navigation */
+.magic-nav-links {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.magic-nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s var(--transition-smooth);
+    border-radius: 8px;
+}
+
+.magic-nav-link:hover,
+.magic-nav-link:focus-visible {
+    color: var(--text-hover);
+    outline: none;
+}
+
+.magic-nav-link.active {
+    color: var(--text-hover);
+}
+
+/* Magic Indicator */
+.magic-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--indicator-color), #8b5cf6);
+    border-radius: 2px;
+    opacity: 0;
+    /* transition removed - handled by AnimeJS */
+    pointer-events: none;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+    z-index: 0;
+}
+
+/* Alternative: Pill Style Indicator */
+.magic-indicator.pill-style {
+    height: 100%;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    box-shadow:
+        0 0 20px rgba(99, 102, 241, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Hamburger Menu (Mobile) */
+.hamburger-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 28px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+    position: relative;
+}
+
+.hamburger-line {
+    width: 100%;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s var(--transition-smooth);
+    transform-origin: center;
+}
+
+/* Hamburger Animation to X */
+.hamburger-toggle.active .hamburger-line:nth-child(1) {
+    transform: translateY(11px) rotate(45deg);
+}
+
+.hamburger-toggle.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.hamburger-toggle.active .hamburger-line:nth-child(3) {
+    transform: translateY(-11px) rotate(-45deg);
+}
+
+/* Mobile Menu */
+.mobile-menu {
+    display: none;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--nav-border);
+    padding: 1.5rem 2rem;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s var(--transition-smooth);
+    pointer-events: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.mobile-nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 1rem;
+    display: block;
+    border-radius: 8px;
+    transition: all 0.2s var(--transition-smooth);
+    font-weight: 500;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:focus-visible {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--text-hover);
+    transform: translateX(8px);
+    outline: none;
+}
+
+.mobile-nav-link.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--text-hover);
+    border-left: 3px solid var(--indicator-color);
+}
+
+/* Focus Visible Styles */
+.magic-nav-link:focus-visible,
+.mobile-nav-link:focus-visible {
+    outline: 2px solid var(--indicator-color);
+    outline-offset: 4px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .magic-navbar-container.scrolled {
+        padding: 0.75rem 1rem;
+    }
+
+    .magic-navbar-container.scrolled #magic-navbar {
+        max-width: 100%;
+        padding: 0.625rem 1.5rem;
+        border-radius: 14px;
+    }
+
+    #magic-navbar {
+        padding: 0 1.5rem;
+    }
+
+    .magic-nav-links {
+        display: none;
+    }
+
+    .hamburger-toggle {
+        display: flex;
+    }
+
+    .mobile-menu {
+        display: block;
+    }
+}
+
+/* Smooth Page Transitions */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Accessibility: Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Analyzer - Track & Optimize Your Subscriptions</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/particles.css">
+    <link rel="stylesheet" href="css/magic-navbar.css">
+    <link rel="stylesheet" href="css/logo-slider.css">
+</head>
+
+<body>
+    <!-- Particle Effect Container -->
+    <div id="particle-container" class="particle-hero">
+        <canvas id="particle-canvas"></canvas>
+
+        <!-- Magic Indicator Navbar -->
+        <div class="magic-navbar-container">
+            <nav id="magic-navbar" aria-label="Main navigation">
+                <!-- Logo with Morphing SVG -->
+                <a href="index.html" class="magic-nav-logo">
+                    <svg class="morph-logo" width="40" height="40" viewBox="0 0 40 40">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Path 1: Main Body (Card Body / Alien Head / Graph Frame) -->
+                        <path id="morph-path-1" fill="url(#logoGradient)" d=""></path>
+                        <!-- Path 2: Detail 1 (Card Chip / Left Eye / Bar 1) -->
+                        <path id="morph-path-2" fill="#fff" fill-opacity="0.9" d=""></path>
+                        <!-- Path 3: Detail 2 (Card Strip / Right Eye / Bar 2) -->
+                        <path id="morph-path-3" fill="#fff" fill-opacity="0.9" d=""></path>
+                    </svg>
+                    <span class="brand-name">Subscription Analyzer</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <ul class="magic-nav-links" role="menubar">
+                    <li role="none">
+                        <a href="#features" class="magic-nav-link" role="menuitem">Features</a>
+                    </li>
+                    <li role="none">
+                        <a href="#tech" class="magic-nav-link" role="menuitem">Technology</a>
+                    </li>
+                    <li role="none">
+                        <a href="dashboard.html" class="magic-nav-link" role="menuitem">Dashboard</a>
+                    </li>
+                    <li role="none">
+                        <a href="#about" class="magic-nav-link" role="menuitem">About</a>
+                    </li>
+
+                    <!-- Magic Indicator -->
+                    <div class="magic-indicator" aria-hidden="true"></div>
+                </ul>
+
+                <!-- Hamburger Menu Toggle -->
+                <button id="hamburger-toggle" class="hamburger-toggle" aria-label="Toggle navigation menu"
+                    aria-expanded="false" aria-controls="mobile-menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu" role="menu">
+                <ul class="mobile-nav-links">
+                    <li role="none">
+                        <a href="#features" class="mobile-nav-link" role="menuitem">Features</a>
+                    </li>
+                    <li role="none">
+                        <a href="#tech" class="mobile-nav-link" role="menuitem">Technology</a>
+                    </li>
+                    <li role="none">
+                        <a href="dashboard.html" class="mobile-nav-link" role="menuitem">Dashboard</a>
+                    </li>
+                    <li role="none">
+                        <a href="#about" class="mobile-nav-link" role="menuitem">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span>Experimental Data Analysis</span>
+            </div>
+
+            <h1 class="hero-title">
+                Smart<br />
+                Expense<br />
+                Analyzer
+            </h1>
+
+            <p class="hero-description">
+                Experience the power of data science. Track, analyze, and optimize your subscriptions with AI-powered
+                insights using Pandas, NumPy, and Scikit-learn.
+            </p>
+
+            <div class="hero-cta">
+                <a href="dashboard.html" class="btn btn-primary btn-large btn-glow">
+                    <span>Launch Dashboard</span>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <p class="demo-note">✨ Interactive demo - No login required</p>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <h2>Built with Modern Technologies</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">�</span>
+                <h3>Smart Analytics</h3>
+                <p>Comprehensive data analysis with Pandas & NumPy</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3>ML Predictions</h3>
+                <p>Cost forecasting with Scikit-learn</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📈</span>
+                <h3>Visual Insights</h3>
+                <p>Interactive charts with Plotly</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">💰</span>
+                <h3>Save Money</h3>
+                <p>Identify savings opportunities automatically</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tech" class="tech-stack">
+        <h2>Trusted Technologies</h2>
+        <p class="headline-primary">Built with Industry Leaders</p>
+
+        <div class="tech-divider"></div>
+
+        <!-- Infinite Logo Slider -->
+        <div class="logo-cloud">
+            <div class="slider-track">
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
+                        alt="Python" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original-wordmark.svg"
+                        alt="Pandas" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg"
+                        alt="NumPy" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg"
+                        alt="Scikit-learn" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original-wordmark.svg"
+                        alt="Flask" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-original-wordmark.svg"
+                        alt="Firebase" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/plotly/plotly-original.svg"
+                        alt="Plotly" />
+                </div>
+                <div class="slider-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+                        alt="JavaScript" />
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-divider"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Subscription Analyzer | Built with Python, Data Science & Machine Learning</p>
+    </footer>
+
+    <script src="js/particles.js"></script>
+    <script src="js/anime.min.js"></script>
+    <script src="js/magic-navbar.js"></script>
+    <script src="js/logo-slider.js"></script>
+</body>
+
+</html>

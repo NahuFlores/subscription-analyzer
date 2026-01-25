@@ -1,0 +1,107 @@
+/* Logo Cloud / Infinite Slider Styles */
+
+/* Container with fade mask */
+.logo-cloud {
+    width: 100%;
+    overflow: hidden;
+    padding: 2rem 0;
+    position: relative;
+
+    /* Fade edges */
+    mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 10%,
+            black 90%,
+            transparent 100%);
+    -webkit-mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 10%,
+            black 90%,
+            transparent 100%);
+}
+
+/* Slider track (moves) */
+.slider-track {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    width: max-content;
+    will-change: transform;
+}
+
+/* Individual logo item */
+.slider-item {
+    flex-shrink: 0;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+.slider-item img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    /* White logos on dark bg */
+    opacity: 0.7;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.logo-cloud:hover .slider-item img {
+    opacity: 1;
+}
+
+/* Tech Stack Section Redesign */
+.tech-stack {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    padding: 5rem 2rem;
+    text-align: center;
+}
+
+.tech-stack h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tech-stack .headline-primary {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+/* Decorative line */
+.tech-divider {
+    width: 100%;
+    max-width: 24rem;
+    height: 1px;
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
+    margin: 0 auto 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .slider-item {
+        height: 24px;
+    }
+
+    .slider-track {
+        gap: 32px;
+    }
+
+    .tech-stack h2 {
+        font-size: 1.5rem;
+    }
+
+    .tech-stack .headline-primary {
+        font-size: 1.75rem;
+    }
+}
