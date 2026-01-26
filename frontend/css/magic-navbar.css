@@ -1,10 +1,9 @@
-/* Magic Indicator Navbar Styles */
+/* Magic Navbar Styles */
 
 :root {
     --nav-height: 70px;
     --nav-bg: rgba(255, 255, 255, 0.08);
     --nav-border: rgba(255, 255, 255, 0.18);
-    --indicator-color: #6366f1;
     --text-color: rgba(255, 255, 255, 0.8);
     --text-hover: rgba(255, 255, 255, 1);
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -17,28 +16,24 @@
     left: 0;
     right: 0;
     z-index: 1000;
-
-    /* Padding for pill effect */
     padding: 0;
-
-    /* Start transparent */
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-bottom: none;
     box-shadow: none;
 
-    /* AnimeJS will handle transitions */
+    /* Smooth CSS transition - no bounce */
+    transition: padding 0.25s ease-out;
 }
 
 /* Scrolled state - Pill-shaped Liquid Glass */
 .magic-navbar-container.scrolled {
-    /* Padding will be animated by AnimeJS */
     padding: 1rem 0;
 }
 
 #magic-navbar {
-    max-width: 1200px;
+    max-width: calc(100% - 4rem);
     margin: 0 auto;
     padding: 0 2rem;
     height: var(--nav-height);
@@ -46,37 +41,51 @@
     justify-content: space-between;
     align-items: center;
     position: relative;
-
-    /* Pill shape - starts invisible */
     background: transparent;
     border-radius: 0;
-    border: none;
+    border: 1px solid transparent;
     box-shadow: none;
 
-    /* AnimeJS will handle transitions */
+    /* Smooth CSS transition - no bounce */
+    transition: all 0.25s ease-out;
 }
 
 /* Pill-shaped nav when scrolled */
 .magic-navbar-container.scrolled #magic-navbar {
-    /* Liquid Glass Background */
-    background: var(--nav-bg);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-
-    /* Pill Shape */
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
     border-radius: 16px;
-    border: 1px solid var(--nav-border);
-
-    /* Enhanced shadows for depth */
-    box-shadow:
-        0 8px 32px 0 rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-        inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
-
-    /* Slightly smaller width for pill effect */
-    max-width: 1100px;
+    border: none;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    max-width: 900px;
     padding: 0.75rem 2rem;
     height: auto;
+    position: relative;
+}
+
+/* Fading border effect - solid on sides, transparent in middle */
+.magic-navbar-container.scrolled #magic-navbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.05) 30%,
+            rgba(255, 255, 255, 0.02) 50%,
+            rgba(255, 255, 255, 0.05) 70%,
+            rgba(255, 255, 255, 0.3) 100%);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 /* Logo */
@@ -89,20 +98,11 @@
     align-items: center;
     gap: 0.75rem;
     z-index: 2;
-}
-
-.morph-logo {
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
-    transition: filter 0.3s ease;
-}
-
-.magic-nav-logo:hover .morph-logo {
-    filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8));
-    transform: scale(1.1);
+    transition: opacity 0.3s ease;
 }
 
 .magic-nav-logo:hover {
-    opacity: 1;
+    opacity: 0.9;
 }
 
 /* Desktop Navigation */
@@ -135,32 +135,6 @@
 
 .magic-nav-link.active {
     color: var(--text-hover);
-}
-
-/* Magic Indicator */
-.magic-indicator {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--indicator-color), #8b5cf6);
-    border-radius: 2px;
-    opacity: 0;
-    /* transition removed - handled by AnimeJS */
-    pointer-events: none;
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
-    z-index: 0;
-}
-
-/* Alternative: Pill Style Indicator */
-.magic-indicator.pill-style {
-    height: 100%;
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 8px;
-    box-shadow:
-        0 0 20px rgba(99, 102, 241, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Hamburger Menu (Mobile) */
@@ -208,7 +182,7 @@
     top: var(--nav-height);
     left: 0;
     right: 0;
-    background: rgba(15, 23, 42, 0.98);
+    background: rgba(10, 10, 15, 0.98);
     backdrop-filter: blur(24px);
     border-bottom: 1px solid var(--nav-border);
     padding: 1.5rem 2rem;
@@ -246,22 +220,16 @@
 
 .mobile-nav-link:hover,
 .mobile-nav-link:focus-visible {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--text-hover);
     transform: translateX(8px);
     outline: none;
 }
 
-.mobile-nav-link.active {
-    background: rgba(99, 102, 241, 0.2);
-    color: var(--text-hover);
-    border-left: 3px solid var(--indicator-color);
-}
-
 /* Focus Visible Styles */
 .magic-nav-link:focus-visible,
 .mobile-nav-link:focus-visible {
-    outline: 2px solid var(--indicator-color);
+    outline: 2px solid rgba(255, 255, 255, 0.5);
     outline-offset: 4px;
 }
 

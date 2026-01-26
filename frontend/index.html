@@ -14,27 +14,14 @@
 <body>
     <!-- Particle Effect Container -->
     <div id="particle-container" class="particle-hero">
+        <div class="bg-orb orb-hero"></div>
         <canvas id="particle-canvas"></canvas>
 
         <!-- Magic Indicator Navbar -->
         <div class="magic-navbar-container">
             <nav id="magic-navbar" aria-label="Main navigation">
-                <!-- Logo with Morphing SVG -->
+                <!-- Logo -->
                 <a href="index.html" class="magic-nav-logo">
-                    <svg class="morph-logo" width="40" height="40" viewBox="0 0 40 40">
-                        <defs>
-                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <!-- Path 1: Main Body (Card Body / Alien Head / Graph Frame) -->
-                        <path id="morph-path-1" fill="url(#logoGradient)" d=""></path>
-                        <!-- Path 2: Detail 1 (Card Chip / Left Eye / Bar 1) -->
-                        <path id="morph-path-2" fill="#fff" fill-opacity="0.9" d=""></path>
-                        <!-- Path 3: Detail 2 (Card Strip / Right Eye / Bar 2) -->
-                        <path id="morph-path-3" fill="#fff" fill-opacity="0.9" d=""></path>
-                    </svg>
                     <span class="brand-name">Subscription Analyzer</span>
                 </a>
 
@@ -49,12 +36,7 @@
                     <li role="none">
                         <a href="dashboard.html" class="magic-nav-link" role="menuitem">Dashboard</a>
                     </li>
-                    <li role="none">
-                        <a href="#about" class="magic-nav-link" role="menuitem">About</a>
-                    </li>
 
-                    <!-- Magic Indicator -->
-                    <div class="magic-indicator" aria-hidden="true"></div>
                 </ul>
 
                 <!-- Hamburger Menu Toggle -->
@@ -78,23 +60,18 @@
                     <li role="none">
                         <a href="dashboard.html" class="mobile-nav-link" role="menuitem">Dashboard</a>
                     </li>
-                    <li role="none">
-                        <a href="#about" class="mobile-nav-link" role="menuitem">About</a>
-                    </li>
+
                 </ul>
             </div>
         </div>
 
         <!-- Hero Content -->
         <div class="hero-content">
-            <div class="hero-badge">
-                <span>Experimental Data Analysis</span>
-            </div>
 
             <h1 class="hero-title">
-                Smart<br />
-                Expense<br />
-                Analyzer
+                <span class="title-line">Smart</span>
+                <span class="title-line">Expense</span>
+                <span class="title-line">Analyzer</span>
             </h1>
 
             <p class="hero-description">
@@ -107,34 +84,60 @@
                     <span>Launch Dashboard</span>
                     <span class="btn-arrow">→</span>
                 </a>
-                <p class="demo-note">✨ Interactive demo - No login required</p>
             </div>
         </div>
 
 
     </div>
 
-    <!-- Features Section -->
+    <!-- Features Section - Bento Layout -->
     <section id="features" class="features-section">
+        <!-- Ambient Background Elements -->
+        <div class="features-bg-ambient">
+            <div class="bg-grid"></div>
+            <div class="bg-orb orb-1"></div>
+            <div class="bg-orb orb-2"></div>
+            <div class="bg-particles" id="ambient-particles"></div>
+        </div>
+
         <h2>Built with Modern Technologies</h2>
-        <div class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">�</span>
+
+        <div class="bento-grid">
+            <!-- SVG Connector Lines - Fluid Flow Effect -->
+            <svg class="connector-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <!-- Adjusted for precision: originating precisely from the inner corners of bento cards -->
+                <line class="connector-line line-1" x1="27.5" y1="27.5" x2="46" y2="46" />
+                <line class="connector-line line-2" x1="72.5" y1="27.5" x2="54" y2="46" />
+                <line class="connector-line line-3" x1="27.5" y1="72.5" x2="46" y2="54" />
+                <line class="connector-line line-4" x1="72.5" y1="72.5" x2="54" y2="54" />
+            </svg>
+
+            <!-- Top Left Card -->
+            <div class="feature-card bento-card">
                 <h3>Smart Analytics</h3>
                 <p>Comprehensive data analysis with Pandas & NumPy</p>
             </div>
-            <div class="feature-card">
-                <span class="feature-icon">🤖</span>
+
+            <!-- Top Right Card -->
+            <div class="feature-card bento-card">
                 <h3>ML Predictions</h3>
                 <p>Cost forecasting with Scikit-learn</p>
             </div>
-            <div class="feature-card">
-                <span class="feature-icon">📈</span>
+
+            <!-- Center Robot - Controlled Animation -->
+            <div class="bento-center">
+                <img id="robot-sprite" src="public/robot-split/frame_000_delay-0.02s.gif" alt="AI Robot"
+                    class="bento-gif robot-gif">
+            </div>
+
+            <!-- Bottom Left Card -->
+            <div class="feature-card bento-card">
                 <h3>Visual Insights</h3>
                 <p>Interactive charts with Plotly</p>
             </div>
-            <div class="feature-card">
-                <span class="feature-icon">💰</span>
+
+            <!-- Bottom Right Card -->
+            <div class="feature-card bento-card">
                 <h3>Save Money</h3>
                 <p>Identify savings opportunities automatically</p>
             </div>
@@ -143,50 +146,70 @@
 
     <!-- Tech Stack Section -->
     <section id="tech" class="tech-stack">
-        <h2>Trusted Technologies</h2>
-        <p class="headline-primary">Built with Industry Leaders</p>
+        <div class="bg-orb orb-tech-right"></div>
+        <div class="tech-container">
+            <div class="tech-header">
+                <span class="tech-label">Technology Stack</span>
+                <h2 class="tech-headline">Built for Performance</h2>
+                <p class="tech-description">Leveraging industry-leading tools and frameworks to deliver accurate,
+                    real-time subscription insights.</p>
+            </div>
 
-        <div class="tech-divider"></div>
-
-        <!-- Infinite Logo Slider -->
-        <div class="logo-cloud">
-            <div class="slider-track">
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
-                        alt="Python" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original-wordmark.svg"
-                        alt="Pandas" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg"
-                        alt="NumPy" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg"
-                        alt="Scikit-learn" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original-wordmark.svg"
-                        alt="Flask" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-original-wordmark.svg"
-                        alt="Firebase" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/plotly/plotly-original.svg"
-                        alt="Plotly" />
-                </div>
-                <div class="slider-item">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
-                        alt="JavaScript" />
+            <div class="marquee-container">
+                <div class="marquee-track">
+                    <!-- Original Set -->
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
+                            alt="Python" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg"
+                            alt="Pandas" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg"
+                            alt="NumPy" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg"
+                            alt="Flask" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg"
+                            alt="Scikit" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-original.svg"
+                            alt="Firebase" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/plotly/plotly-original.svg"
+                            alt="Plotly" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+                            alt="JS" /></div>
+                    <!-- Duplicate Set -->
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
+                            alt="Python" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg"
+                            alt="Pandas" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg"
+                            alt="NumPy" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg"
+                            alt="Flask" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg"
+                            alt="Scikit" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-original.svg"
+                            alt="Firebase" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/plotly/plotly-original.svg"
+                            alt="Plotly" /></div>
+                    <div class="marquee-item"><img
+                            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+                            alt="JS" /></div>
                 </div>
             </div>
         </div>
-
-        <div class="tech-divider"></div>
     </section>
 
     <!-- Footer -->
@@ -196,8 +219,9 @@
 
     <script src="js/particles.js"></script>
     <script src="js/anime.min.js"></script>
+    <script src="js/hero-animations.js"></script>
     <script src="js/magic-navbar.js"></script>
-    <script src="js/logo-slider.js"></script>
+    <script src="js/robot-animation.js"></script>
 </body>
 
 </html>

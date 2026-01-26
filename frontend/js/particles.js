@@ -108,9 +108,14 @@ class ParticleEffect {
             this.mouse.isActive = false;
         });
 
+        // Debounced resize to prevent layout thrashing
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            this.setupCanvas();
-            this.initParticles();
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.setupCanvas();
+                this.initParticles();
+            }, 250);
         });
     }
 
@@ -118,17 +123,23 @@ class ParticleEffect {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // Pulsating radial glow
         const centerX = this.width / 2;
         const centerY = this.height / 2;
-        const pulseOpacity = Math.sin(time * 0.0008) * 0.035 + 0.085;
+        const maxDim = Math.max(this.width, this.height);
 
+        // Single smooth gradient - no hard edges
         const gradient = this.ctx.createRadialGradient(
             centerX, centerY, 0,
-            centerX, centerY, Math.max(this.width, this.height) * 0.7
+            centerX, centerY, maxDim
         );
-        gradient.addColorStop(0, `rgba(99, 102, 241, ${pulseOpacity})`);
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        // Very smooth transition with many stops to prevent banding
+        gradient.addColorStop(0, 'rgba(20, 20, 28, 0.3)');
+        gradient.addColorStop(0.15, 'rgba(16, 16, 22, 0.2)');
+        gradient.addColorStop(0.3, 'rgba(12, 12, 18, 0.1)');
+        gradient.addColorStop(0.5, 'rgba(10, 10, 15, 0.05)');
+        gradient.addColorStop(0.7, 'rgba(10, 10, 15, 0)');
+        gradient.addColorStop(1, 'rgba(10, 10, 15, 0)');
 
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
