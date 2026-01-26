@@ -24,7 +24,16 @@
     box-shadow: none;
 
     /* Smooth CSS transition - no bounce */
-    transition: padding 0.25s ease-out;
+    transition: padding 0.25s ease-out, background 0.3s ease;
+}
+
+/* Unify Navbar Background when Menu is Open (Hero State) */
+.magic-navbar-container.menu-open {
+    background: transparent;
+    /* Remove solid bg killing the glass effect */
+    /* If we want glass on hero, apply to child, not container */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 /* Scrolled state - Pill-shaped Liquid Glass */
@@ -52,12 +61,11 @@
 
 /* Pill-shaped nav when scrolled */
 .magic-navbar-container.scrolled #magic-navbar {
-    background: rgba(10, 10, 15, 0.7);
     backdrop-filter: blur(20px) saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
     border-radius: 16px;
     border: none;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 21px 40px -2px rgb(0, 0, 0);
     max-width: 900px;
     padding: 0.75rem 2rem;
     height: auto;
@@ -175,28 +183,122 @@
     transform: translateY(-11px) rotate(-45deg);
 }
 
-/* Mobile Menu */
+/* Mobile Menu - 3D Liquid Dropdown */
 .mobile-menu {
     display: none;
-    position: fixed;
-    top: var(--nav-height);
+    /* Block when active via JS */
+    position: absolute;
+    top: 100%;
+    /* Push naturally below */
+    /* Default Hero State: Full Width */
+    width: 100%;
     left: 0;
     right: 0;
-    background: rgba(10, 10, 15, 0.98);
+    max-width: 100%;
+    /* Reset constraint */
+    margin: 0;
+    /* Reset margin */
+
+    background: rgba(10, 10, 15, 0.95);
     backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 35px;
+    /* Square borders for full width */
+    border: none;
     border-bottom: 1px solid var(--nav-border);
     padding: 1.5rem 2rem;
+
+    /* Animation Origin & Transitions */
     opacity: 0;
-    transform: translateY(-20px);
-    transition: all 0.3s var(--transition-smooth);
+    transform-origin: top center;
+    transform: rotateX(-15deg) translateY(-10px) scale(0.95);
+    /* 3D Start pos */
+    transition:
+        opacity 0.3s ease,
+        transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-radius 0.4s ease,
+        margin 0.4s ease,
+        width 0.4s ease,
+        max-width 0.4s ease;
+    /* Fluid transition for width */
+
     pointer-events: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 30px 40px rgba(0, 0, 0, 0.4);
+    z-index: 900;
 }
 
+/* Active State just toggles visibility/3D reset */
 .mobile-menu.active {
+    display: block;
     opacity: 1;
-    transform: translateY(0);
+    transform: rotateX(0) translateY(0) scale(1);
     pointer-events: auto;
+}
+
+/* Scrolled State: Transform into Merged Pill Extension */
+.magic-navbar-container.scrolled .mobile-menu {
+    width: calc(100% - 4rem);
+    /* Float with margins like the navbar */
+    max-width: 900px;
+    /* Match navbar pill width */
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+
+    /* Position Flush */
+    top: 93%;
+    margin-top: -5px;
+    /* Aggressive overlap to ensure no gap line exists */
+    padding-top: 1.5rem;
+    /* More space inside since we lost the gap */
+
+    /* Shape Merger */
+    border-radius: 0 0 24px 24px;
+    /* Top square, bottom rounded */
+    border: none;
+    /* Reset basic border */
+
+    /* Background Merge */
+    background: transparent;
+    /* No tint, pure glass like the navbar */
+    /* Matches the 'pure glass' look of the navbar */
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    /* Unified shadow for the whole dropdown */
+
+    /* Border Magic to Match Parent */
+    /* We use a pseudo to create the gradient border only on bottom/sides */
+}
+
+/* Pseudo-element for the Gradient Border (Sides & Bottom only) */
+.magic-navbar-container.scrolled .mobile-menu::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0 0 24px 24px;
+    /* Match shape */
+    padding: 1px;
+    /* Border width */
+    padding-top: 0;
+    /* No top border */
+
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            transparent 40%,
+            transparent 60%,
+            rgba(255, 255, 255, 0.3) 100%);
+    /* Thick corners style */
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 .mobile-nav-links {
@@ -206,6 +308,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    text-align: center;
+    /* Center links for pill coherence */
+    padding-top: 10px;
+    /* Spacing from the "seam" */
 }
 
 .mobile-nav-link {
@@ -259,6 +365,22 @@
 
     .mobile-menu {
         display: block;
+        /* Ensure it CAN be shown on mobile */
+        /* Note: It is display:none by default and handled by .active class, 
+           but this override might be redundant or ensuring context. 
+           Actually, the issue is likely that .active makes it display:block globally. 
+           We need to FORCE hide it on desktop. */
+    }
+}
+
+/* Force Hide Mobile Menu on Desktop (>768px) */
+@media (min-width: 769px) {
+    .mobile-menu {
+        display: none !important;
+    }
+
+    .hamburger-toggle {
+        display: none !important;
     }
 }
 
@@ -267,11 +389,41 @@ html {
     scroll-behavior: smooth;
 }
 
+/* PERFORMANCE HACK: "Backdrop Keepalive" */
+@keyframes backdrop-keepalive {
+    0% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.00001);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.mobile-menu,
+.magic-navbar-container.scrolled #magic-navbar {
+    animation: backdrop-keepalive 1s linear infinite;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+
 /* Accessibility: Reduce motion */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+}
+
+/* Hide Brand Name on smaller screens (Tablet/Laptop) */
+@media (max-width: 1120px) {
+    .brand-name {
+        display: none;
     }
 }

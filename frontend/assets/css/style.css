@@ -21,6 +21,12 @@
     /* Responsive Orb Sizes */
     --orb-size-base: clamp(300px, 40vw, 600px);
     --orb-size-hero: clamp(400px, 60vw, 800px);
+
+    /* Compatibility mapping for Premium Polish */
+    --accent-blue: var(--primary);
+    /* Map to existing primary */
+    --accent-cyan: #22d3ee;
+    /* vibrant cyan for highlights */
 }
 
 html {
@@ -38,6 +44,48 @@ body {
     overflow-x: clip;
     /* clip doesn't create a scroll container, preventing double bars */
     width: 100%;
+}
+
+/* ============================================ */
+/* PREMIUM POLISH - Scrollbar & Selection */
+/* ============================================ */
+
+/* Custom Slim Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    /* For horizontal scroll */
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    /* Low opacity primary */
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    /* Full solid on hover */
+}
+
+/* Custom Selection Highlight */
+::selection {
+    background: rgba(99, 102, 241, 0.3);
+    /* Semi-transparent primary */
+    color: #ffffff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* Accessibility Focus Indicators */
+:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 4px;
+    border-radius: 4px;
 }
 
 /* Noise texture overlay - full page */

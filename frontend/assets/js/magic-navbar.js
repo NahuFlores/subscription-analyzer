@@ -8,6 +8,7 @@ class MobileMenu {
     constructor(toggleId, menuId) {
         this.toggle = document.getElementById(toggleId);
         this.menu = document.getElementById(menuId);
+        this.navbarContainer = document.querySelector('.magic-navbar-container');
 
         if (!this.toggle || !this.menu) return;
 
@@ -48,12 +49,14 @@ class MobileMenu {
     openMenu() {
         this.toggle.classList.add('active');
         this.menu.classList.add('active');
+        if (this.navbarContainer) this.navbarContainer.classList.add('menu-open');
         this.toggle.setAttribute('aria-expanded', 'true');
     }
 
     closeMenu() {
         this.toggle.classList.remove('active');
         this.menu.classList.remove('active');
+        if (this.navbarContainer) this.navbarContainer.classList.remove('menu-open');
         this.toggle.setAttribute('aria-expanded', 'false');
         this.isOpen = false;
     }
