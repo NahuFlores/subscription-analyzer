@@ -31,7 +31,7 @@
 
 html {
     overflow-x: hidden;
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth;  <-- Removed to let Lenis handle it */
 }
 
 body {
@@ -724,4 +724,29 @@ body::after {
     .tech-headline {
         font-size: 1.75rem;
     }
+}
+
+/* ============================================ */
+/* Lenis Smooth Scroll Recommended CSS */
+/* ============================================ */
+
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+    pointer-events: none;
 }

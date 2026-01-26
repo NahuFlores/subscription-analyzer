@@ -210,7 +210,7 @@
     }
 
     .hero-title {
-        font-size: clamp(2.5rem, 10vw, 4rem);
+        font-size: clamp(6rem, 10vw, 4rem);
         margin-bottom: 1.5rem;
     }
 
@@ -223,7 +223,7 @@
 
 @media (max-width: 480px) {
     .hero-title {
-        font-size: 2.25rem;
+        font-size: 5rem;
     }
 
     .hero-content {
