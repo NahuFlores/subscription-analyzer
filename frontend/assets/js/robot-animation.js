@@ -31,7 +31,7 @@ class RobotAnimation {
         for (let i = 0; i < this.totalFrames; i++) {
             const img = new Image();
             const frameNum = String(i).padStart(3, '0');
-            img.src = `public/robot-split/frame_${frameNum}_delay-0.02s.gif`;
+            img.src = `assets/images/robot-split/frame_${frameNum}_delay-0.02s.gif`;
 
             img.onload = () => {
                 loaded++;

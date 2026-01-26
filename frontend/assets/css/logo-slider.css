@@ -100,7 +100,6 @@
 /* Hover: Illuminate and scale slightly */
 .marquee-item:hover img {
     filter: invert(1) grayscale(0) opacity(1);
-    transform: scale(1.1);
 }
 
 @keyframes marquee-scroll {

@@ -45,7 +45,7 @@ body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background: url('../public/noise.gif');
+    background: url('../images/noise.gif');
     background-repeat: repeat;
     opacity: 0.04;
     pointer-events: none;
@@ -604,6 +604,18 @@ body::after {
     to {
         transform: translate(-45%, -55%) scale(1.2);
     }
+}
+
+/* Force icons to be white/monochrome */
+.marquee-item img {
+    /* High brightness/contrast approach for white icons */
+    filter: grayscale(100%) brightness(1000%);
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.marquee-item img:hover {
+    opacity: 1;
 }
 
 /* Footer */
