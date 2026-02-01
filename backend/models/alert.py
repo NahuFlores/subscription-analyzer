@@ -14,22 +14,22 @@ class Alert:
     
     ALERT_TYPES = {
         'upcoming_payment': {
-            'icon': '💳',
+            'icon': 'credit-card',
             'color': '#3b82f6',
             'priority': 'medium'
         },
         'unused_subscription': {
-            'icon': '⚠️',
+            'icon': 'warning',
             'color': '#f59e0b',
             'priority': 'high'
         },
         'cost_spike': {
-            'icon': '📈',
+            'icon': 'trending-up',
             'color': '#ef4444',
             'priority': 'high'
         },
         'savings_opportunity': {
-            'icon': '💰',
+            'icon': 'dollar-sign',
             'color': '#10b981',
             'priority': 'low'
         }

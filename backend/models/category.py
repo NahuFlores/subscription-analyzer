@@ -13,69 +13,69 @@ class Category:
     # Predefined categories with keywords for auto-categorization
     PREDEFINED_CATEGORIES = {
         'Streaming': {
-            'icon': '🎬',
+            'icon': 'film',
             'color': '#ef4444',
             'keywords': ['netflix', 'spotify', 'hulu', 'disney', 'prime video', 
                         'youtube', 'apple music', 'hbo', 'paramount', 'peacock',
                         'crunchyroll', 'funimation', 'tidal', 'deezer']
         },
         'Software': {
-            'icon': '💻',
+            'icon': 'laptop',
             'color': '#3b82f6',
             'keywords': ['adobe', 'microsoft', 'office', 'github', 'dropbox',
                         'google', 'icloud', 'notion', 'evernote', 'slack',
                         'zoom', 'canva', 'figma', 'grammarly']
         },
         'Fitness': {
-            'icon': '💪',
+            'icon': 'dumbbell',
             'color': '#10b981',
             'keywords': ['gym', 'fitness', 'peloton', 'strava', 'myfitnesspal',
                         'headspace', 'calm', 'yoga', 'crossfit', 'planet fitness']
         },
         'Gaming': {
-            'icon': '🎮',
+            'icon': 'gamepad',
             'color': '#8b5cf6',
             'keywords': ['playstation', 'xbox', 'nintendo', 'steam', 'epic games',
                         'twitch', 'discord', 'ea play', 'ubisoft']
         },
         'News & Media': {
-            'icon': '📰',
+            'icon': 'newspaper',
             'color': '#f59e0b',
             'keywords': ['news', 'times', 'post', 'journal', 'medium', 'substack',
                         'patreon', 'magazine', 'newspaper']
         },
         'Cloud Storage': {
-            'icon': '☁️',
+            'icon': 'cloud',
             'color': '#06b6d4',
             'keywords': ['cloud', 'storage', 'backup', 'drive', 'onedrive',
                         'box', 'mega', 'sync']
         },
         'Education': {
-            'icon': '📚',
+            'icon': 'book',
             'color': '#ec4899',
             'keywords': ['udemy', 'coursera', 'skillshare', 'masterclass',
                         'linkedin learning', 'pluralsight', 'datacamp', 'duolingo']
         },
         'Food & Delivery': {
-            'icon': '🍔',
+            'icon': 'utensils',
             'color': '#f97316',
             'keywords': ['uber eats', 'doordash', 'grubhub', 'postmates',
                         'instacart', 'hello fresh', 'blue apron']
         },
         'Transportation': {
-            'icon': '🚗',
+            'icon': 'car',
             'color': '#14b8a6',
             'keywords': ['uber', 'lyft', 'car', 'insurance', 'parking',
                         'toll', 'transit', 'metro']
         },
         'Other': {
-            'icon': '📦',
+            'icon': 'box',
             'color': '#6b7280',
             'keywords': []
         }
     }
     
-    def __init__(self, name: str, icon: str = '📦', 
+    def __init__(self, name: str, icon: str = 'box', 
                  color: str = '#6b7280', keywords: Optional[List[str]] = None):
         self._name = name
         self._icon = icon

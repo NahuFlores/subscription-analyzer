@@ -3,10 +3,10 @@ Analytics package initialization
 """
 from .analyzer import SubscriptionAnalyzer
 from .predictor import CostPredictor
-from .visualizer import DataVisualizer
+from .report_generator import ReportGenerator
 
 __all__ = [
     'SubscriptionAnalyzer',
     'CostPredictor',
-    'DataVisualizer'
+    'ReportGenerator'
 ]

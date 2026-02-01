@@ -3,7 +3,7 @@ Analytics routes - API endpoints for data analysis and insights
 """
 from flask import Blueprint, request, jsonify
 from models import SubscriptionFactory, User
-from analytics import SubscriptionAnalyzer, CostPredictor, DataVisualizer
+from analytics import SubscriptionAnalyzer, CostPredictor
 from utils import FirebaseHelper
 
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
@@ -96,7 +96,10 @@ def get_predictions():
 
 @analytics_bp.route('/charts', methods=['GET'])
 def get_charts():
-    """Get chart data for visualizations"""
+    """
+    Get chart data for visualizations (Recharts format)
+    Frontend uses Recharts, so we return raw data instead of Plotly JSON
+    """
     user_id = request.args.get('user_id')
     
     if not user_id:
@@ -118,26 +121,28 @@ def get_charts():
         user_data = FirebaseHelper.get_user(user_id)
         user = User.from_dict(user_data) if user_data else User(user_id, 'user@example.com', 'User')
         
-        # Create analyzer and visualizer
+        # Create analyzer
         analyzer = SubscriptionAnalyzer(subscriptions, user)
-        visualizer = DataVisualizer(subscriptions)
         
         # Get analytics data
         analytics_data = analyzer.export_to_dict()
-        
-        # Generate charts
-        charts = visualizer.generate_all_charts(analytics_data)
         
         # Get predictions for trend chart
         predictor = CostPredictor(subscriptions)
         predictions = predictor.predict_future_costs(6)
         
-        if predictions.get('predictions'):
-            charts['cost_trend'] = visualizer.create_cost_trend_chart(predictions['predictions'])
+        # Format data for Recharts (frontend will handle visualization)
+        charts_data = {
+            'category_costs': analytics_data.get('cost_by_category', {}),
+            'billing_cycle_costs': analytics_data.get('cost_by_billing_cycle', {}),
+            'category_distribution': analytics_data.get('category_distribution', {}),
+            'upcoming_payments': analytics_data.get('upcoming_payments', []),
+            'cost_predictions': predictions.get('predictions', [])
+        }
         
         return jsonify({
             'success': True,
-            'charts': charts
+            'charts': charts_data
         }), 200
         
     except Exception as e:
@@ -220,6 +225,60 @@ def get_insights():
             'success': True,
             'insights': insights,
             'count': len(insights)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@analytics_bp.route('/report', methods=['GET'])
+def generate_report():
+    """
+    Generate static analysis report with matplotlib/seaborn visualizations
+    Used for academic demonstration and PDF exports
+    """
+    user_id = request.args.get('user_id')
+    report_type = request.args.get('type', 'all')  # 'all', 'category', 'cost', 'stats', 'correlation'
+    
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+    
+    try:
+        from analytics import ReportGenerator
+        
+        # Get subscriptions
+        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
+        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+        
+        if not subscriptions:
+            return jsonify({
+                'success': True,
+                'message': 'No subscriptions for report',
+                'plots': {}
+            }), 200
+        
+        # Create report generator
+        report_gen = ReportGenerator(subscriptions)
+        
+        # Generate requested plots (as base64 images)
+        plots = {}
+        
+        if report_type == 'all' or report_type == 'category':
+            plots['category_distribution'] = report_gen.create_category_distribution_plot()
+        
+        if report_type == 'all' or report_type == 'cost':
+            plots['cost_analysis'] = report_gen.create_cost_analysis_plot()
+        
+        if report_type == 'all' or report_type == 'stats':
+            plots['statistical_summary'] = report_gen.create_statistical_summary_plot()
+        
+        if report_type == 'all' or report_type == 'correlation':
+            plots['correlation_heatmap'] = report_gen.create_correlation_heatmap()
+        
+        return jsonify({
+            'success': True,
+            'plots': plots,
+            'message': f'Generated {len(plots)} visualization(s) using matplotlib/seaborn'
         }), 200
         
     except Exception as e:

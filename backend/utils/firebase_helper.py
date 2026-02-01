@@ -32,7 +32,7 @@ class FirebaseHelper:
         # Always initialize in-memory storage as fallback
         if cls._storage is None:
             cls._storage = get_storage()
-            print("✅ In-memory storage initialized for demo mode")
+            print("In-memory storage initialized for demo mode")
         
         try:
             if credentials_path and os.path.exists(credentials_path):
@@ -41,7 +41,7 @@ class FirebaseHelper:
             else:
                 # For development without credentials
                 # In production, you MUST provide credentials
-                print("⚠️  Warning: Running without Firebase credentials (development mode)")
+                print("Warning: Running without Firebase credentials (development mode)")
                 print("   Data will not persist. Set FIREBASE_CREDENTIALS_PATH in .env")
                 # Don't initialize Firebase in this case
                 cls._initialized = True
@@ -49,10 +49,10 @@ class FirebaseHelper:
             
             cls._db = firestore.client()
             cls._initialized = True
-            print("✅ Firebase initialized successfully")
+            print("Firebase initialized successfully")
             
         except Exception as e:
-            print(f"❌ Error initializing Firebase: {e}")
+            print(f"Error initializing Firebase: {e}")
             print("   Running in offline mode - using in-memory storage")
             cls._initialized = True
     

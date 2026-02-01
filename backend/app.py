@@ -36,11 +36,27 @@ def create_app(config_class=Config):
     @app.route('/')
     def index():
         return send_from_directory(app.static_folder, 'index.html')
-    
+
+    # Dashboard routes
     @app.route('/dashboard')
-    def dashboard():
-        return send_from_directory(app.static_folder, 'dashboard.html')
-    
+    @app.route('/dashboard/')
+    @app.route('/dashboard/<path:path>')
+    def dashboard(path=''):
+        dashboard_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dashboard/dist')
+        
+        response = None
+        # Check if the requested file exists in dashboard/dist
+        if path and os.path.exists(os.path.join(dashboard_folder, path)):
+            response = send_from_directory(dashboard_folder, path)
+        else:
+            # Otherwise, serve index.html for client-side routing
+            response = send_from_directory(dashboard_folder, 'index.html')
+            
+        # Disable caching for dashboard to ensure updates are seen
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():
@@ -85,13 +101,13 @@ if __name__ == '__main__':
     app = create_app()
     
     print("=" * 60)
-    print("🚀 Subscription Analyzer Backend")
+    print("Subscription Analyzer Backend")
     print("=" * 60)
-    print(f"📍 Server running on: http://{Config.HOST}:{Config.PORT}")
-    print(f"🔥 Firebase: {'✅ Connected' if FirebaseHelper.is_available() else '⚠️  Offline Mode'}")
-    print(f"🐛 Debug mode: {Config.DEBUG}")
+    print(f"Server running on: http://{Config.HOST}:{Config.PORT}")
+    print(f"Firebase: {'Connected' if FirebaseHelper.is_available() else 'Offline Mode'}")
+    print(f"Debug mode: {Config.DEBUG}")
     print("=" * 60)
-    print("\n📚 API Endpoints:")
+    print("\nAPI Endpoints:")
     print("  GET  /api/health")
     print("  GET  /api/categories")
     print("  GET  /api/subscriptions?user_id=<id>")
@@ -104,7 +120,7 @@ if __name__ == '__main__':
     print("  GET  /api/analytics/charts?user_id=<id>")
     print("  GET  /api/analytics/insights?user_id=<id>")
     print("=" * 60)
-    print("\n⌨️  Press CTRL+C to stop the server\n")
+    print("\nPress CTRL+C to stop the server\n")
     
     app.run(
         host=Config.HOST,

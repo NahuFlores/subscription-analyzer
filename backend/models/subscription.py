@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 import uuid
+import calendar
 
 
 class Subscription(ABC):
@@ -133,11 +134,24 @@ class MonthlySubscription(Subscription):
         
         # Keep adding months until we're in the future
         while next_billing <= today:
-            # Add one month
-            if next_billing.month == 12:
-                next_billing = next_billing.replace(year=next_billing.year + 1, month=1)
-            else:
-                next_billing = next_billing.replace(month=next_billing.month + 1)
+            # Add one month logic handling end-of-month edge cases
+            year = next_billing.year
+            month = next_billing.month
+            
+            new_month = month + 1
+            new_year = year
+            if new_month > 12:
+                new_month = 1
+                new_year += 1
+                
+            # Get max days in the new month
+            _, last_day = calendar.monthrange(new_year, new_month)
+            
+            # Clamp original day to valid range for new month
+            # (e.g. Jan 31 -> Feb 28/29)
+            new_day = min(self._start_date.day, last_day)
+            
+            next_billing = next_billing.replace(year=new_year, month=new_month, day=new_day)
         
         return next_billing
     

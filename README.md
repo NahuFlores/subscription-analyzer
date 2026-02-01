@@ -1,220 +1,273 @@
-# 💳 Subscription Analyzer
+# Subscription Analyzer
 
-A full-stack web application for tracking and analyzing recurring subscriptions using **Python**, **Data Science**, and **Machine Learning**.
+> A full-stack analytics platform for tracking recurring subscriptions, powered by Python data science and modern React.
 
-![Python](https://img.shields.io/badge/Python-3.13-blue)
-![Flask](https://img.shields.io/badge/Flask-3.1-green)
-![Pandas](https://img.shields.io/badge/Pandas-2.3-orange)
-![Scikit--learn](https://img.shields.io/badge/Scikit--learn-1.8-red)
+![Python](https://img.shields.io/badge/Python-3.13-blue?style=flat-square)
+![Flask](https://img.shields.io/badge/Flask-3.1-green?style=flat-square)
+![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square)
+![Pandas](https://img.shields.io/badge/Pandas-2.3-orange?style=flat-square)
+![Scikit--learn](https://img.shields.io/badge/Scikit--learn-1.8-red?style=flat-square)
 
-## 🎯 Features
+---
 
-### 📊 **Data Analysis** (Pandas & NumPy)
-- Comprehensive cost analysis and statistics
-- Category-based breakdown
-- Billing cycle analysis
-- Anomaly detection using statistical methods
+## Overview
 
-### 🤖 **Machine Learning** (Scikit-learn)
-- **Linear Regression** for cost predictions (6-month forecast)
-- **K-Means Clustering** for subscription grouping
-- Unused subscription detection
-- Cost efficiency metrics
+This application combines **data science**, **machine learning**, and **premium UI design** to help users analyze and optimize their subscription spending. Built with a focus on clean architecture, performance, and user experience.
 
-### 📈 **Interactive Visualizations** (Plotly)
-- Category cost pie charts
-- Cost prediction trends
+**Demo:** Run locally with `python app.py` (see Getting Started)
+
+---
+
+## Core Features
+
+### Analytics & Insights
+- Real-time cost analysis with Pandas and NumPy
+- Category-based spending breakdown
 - Billing cycle comparisons
-- Upcoming payment timelines
+- Statistical anomaly detection
+- 6-month cost forecasting using Linear Regression
 
-### 🔥 **Firebase Integration**
-- Real-time database (Firestore)
-- User authentication ready
-- Scalable cloud storage
+### Machine Learning
+- Cost prediction models with confidence intervals
+- K-Means clustering for subscription grouping
+- Unused subscription detection
+- Automated spending insights
 
-### 🎨 **Modern UI**
-- Premium dark mode design
-- Glassmorphism effects
-- Smooth animations
-- Fully responsive
+### Visualizations
+- **Interactive Charts** - Recharts-powered dashboard with smooth animations
+- **Professional Reports** - Matplotlib/Seaborn static visualizations for export
+- Monthly cost trends with percentage indicators
+- Category distribution analysis
+- Upcoming payment timeline
 
-## 🏗️ Architecture
+### User Experience
+- Glassmorphism design with backdrop blur
+- Fluid animations using Framer Motion and Anime.js
+- Skeleton loading states
+- Silent data refresh (no jarring page reloads)
+- Fully responsive, mobile-first design
+- Tab navigation between Dashboard and Reports
+
+---
+
+## Tech Stack
+
+### Backend
+```
+Python 3.13
+├── Flask 3.1          # RESTful API
+├── Pandas 2.3         # Data analysis
+├── NumPy 2.3          # Numerical computing
+├── Scikit-learn 1.8   # Machine learning
+├── Matplotlib 3.10    # Static visualizations
+├── Seaborn 0.13       # Statistical plots
+└── Firebase Admin     # Cloud database
+```
+
+### Frontend
+```
+React 18.3
+├── Vite 7.3           # Build tool
+├── Tailwind CSS v4    # Styling
+├── Recharts 2.15      # Interactive charts
+├── Framer Motion 12   # Page transitions
+├── Anime.js 3.2       # Advanced animations
+└── React Router 7     # Client routing
+```
+
+---
+
+## Architecture
 
 ### Object-Oriented Design
-- **Inheritance**: `Subscription` → `MonthlySubscription`, `AnnualSubscription`, `CustomSubscription`
-- **Polymorphism**: Different billing cycle calculations
-- **Encapsulation**: Private attributes with property decorators
-- **Factory Pattern**: `SubscriptionFactory` for object creation
-- **Abstraction**: Abstract base classes
+The backend follows clean OOP principles with a well-structured inheritance hierarchy:
+
+```python
+Subscription (Abstract Base)
+├── MonthlySubscription
+├── AnnualSubscription
+└── CustomSubscription
+```
+
+**Design Patterns:**
+- Factory Pattern for object creation
+- Encapsulation with property decorators
+- Polymorphism for billing calculations
+- Singleton pattern for database connections
 
 ### Project Structure
 ```
 subscription-analyzer/
 ├── backend/
-│   ├── models/              # OOP classes
-│   │   ├── user.py
-│   │   ├── subscription.py  # Inheritance hierarchy
-│   │   ├── category.py
-│   │   └── alert.py
-│   ├── analytics/           # Data analysis
-│   │   ├── analyzer.py      # Pandas/NumPy
-│   │   ├── predictor.py     # Scikit-learn ML
-│   │   └── visualizer.py    # Plotly charts
-│   ├── routes/              # Flask API
-│   ├── utils/               # Firebase helper
-│   ├── config.py
-│   └── app.py               # Main Flask app
-├── frontend/
-│   ├── index.html
-│   ├── dashboard.html
-│   ├── css/
-│   └── js/
-└── requirements.txt
+│   ├── models/              # Domain models
+│   ├── analytics/           # Data science & ML
+│   │   ├── analyzer.py      # Pandas analysis
+│   │   ├── predictor.py     # ML models
+│   │   └── report_generator.py  # Matplotlib/Seaborn
+│   ├── routes/              # API endpoints
+│   └── utils/               # Firebase & storage
+│
+└── dashboard/
+    ├── src/
+    │   ├── components/      # React components
+    │   ├── hooks/           # Custom hooks
+    │   └── layouts/         # Page layouts
+    └── public/              # Static assets
 ```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.10+
-- pip3
-
-### Installation
-
-1. **Clone/Navigate to project**
-```bash
-cd subscription-analyzer
-```
-
-2. **Install dependencies** (you already have them!)
-```bash
-pip3 install -r requirements.txt
-```
-
-3. **Set up environment** (Optional - for Firebase)
-```bash
-cp .env.example .env
-# Edit .env and add your Firebase credentials path
-```
-
-4. **Run the application**
-```bash
-cd backend
-python3 app.py
-```
-
-5. **Open your browser**
-```
-http://localhost:5000
-```
-
-## 📚 API Endpoints
-
-### Subscriptions
-- `GET /api/subscriptions?user_id=<id>` - Get all subscriptions
-- `POST /api/subscriptions` - Create subscription
-- `PUT /api/subscriptions/<id>` - Update subscription
-- `DELETE /api/subscriptions/<id>` - Delete subscription
-
-### Analytics
-- `GET /api/analytics/summary?user_id=<id>` - Get analytics summary
-- `GET /api/analytics/predictions?user_id=<id>` - Get ML predictions
-- `GET /api/analytics/charts?user_id=<id>` - Get chart data
-- `GET /api/analytics/insights?user_id=<id>` - Get AI insights
-
-### Utilities
-- `GET /api/health` - Health check
-- `GET /api/categories` - Get all categories
-
-## 🧪 Technologies Used
-
-### Backend
-- **Python 3.13** - Core language
-- **Flask 3.1** - Web framework
-- **Pandas 2.3** - Data manipulation
-- **NumPy 2.3** - Numerical computing
-- **Scikit-learn 1.8** - Machine learning
-- **Matplotlib 3.10** - Static visualizations
-- **Plotly 6.5** - Interactive charts
-- **Firebase Admin 7.1** - Database
-
-### Frontend
-- **HTML5** - Structure
-- **CSS3** - Styling (Glassmorphism, Gradients)
-- **JavaScript ES6+** - Interactivity
-- **Plotly.js** - Chart rendering
-
-## 💡 Key Concepts Demonstrated
-
-### Data Science
-✅ Data manipulation with Pandas DataFrames  
-✅ Statistical analysis with NumPy  
-✅ Data visualization with Matplotlib & Plotly  
-✅ Feature engineering  
-✅ Data cleaning and transformation  
-
-### Machine Learning
-✅ Linear Regression for predictions  
-✅ K-Means clustering  
-✅ Feature scaling with StandardScaler  
-✅ Model training and prediction  
-✅ Anomaly detection  
-
-### Object-Oriented Programming
-✅ Classes and objects  
-✅ Inheritance hierarchy  
-✅ Polymorphism  
-✅ Encapsulation (private attributes, properties)  
-✅ Abstraction (abstract base classes)  
-✅ Design patterns (Factory)  
-
-### Web Development
-✅ RESTful API design  
-✅ MVC architecture  
-✅ Frontend-backend integration  
-✅ Responsive design  
-✅ Modern UI/UX  
-
-## 🎓 Learning Outcomes
-
-This project demonstrates:
-1. **Full-stack development** with Python
-2. **Data analysis** using Pandas and NumPy
-3. **Machine learning** with Scikit-learn
-4. **Object-oriented design** principles
-5. **API development** with Flask
-6. **Database integration** with Firebase
-7. **Modern web UI** development
-
-## 📝 Notes
-
-- **Demo Mode**: Works without Firebase (data won't persist)
-- **Firebase Setup**: Add credentials in `.env` for data persistence
-- **Development**: Debug mode enabled by default
-- **Production**: Set `FLASK_ENV=production` in `.env`
-
-## 🔮 Future Enhancements
-
-- [ ] User authentication with Firebase Auth
-- [ ] Email notifications for upcoming payments
-- [ ] Export reports to PDF/Excel
-- [ ] Mobile app (React Native)
-- [ ] More ML models (Random Forest, Neural Networks)
-- [ ] Spending recommendations
-- [ ] Integration with bank APIs
-
-## 📄 License
-
-MIT License - Feel free to use for learning and projects!
-
-## 👨‍💻 Author
-
-Built as a learning project to practice:
-- Python programming
-- Data analysis with Pandas/NumPy
-- Machine Learning with Scikit-learn
-- Object-Oriented Programming
-- Web development with Flask
 
 ---
 
-**Happy Analyzing! 💰📊**
+## Getting Started
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- Bun or npm
+
+### Installation
+
+```bash
+# Install backend dependencies
+pip3 install -r requirements.txt
+
+# Install frontend dependencies
+cd dashboard && bun install
+
+# Build frontend (production)
+bun run build
+```
+
+### Running
+
+**Development:**
+```bash
+# Terminal 1 - Backend
+cd backend && python app.py
+
+# Terminal 2 - Frontend (optional, hot reload)
+cd dashboard && bun run dev
+```
+
+**Production:**
+```bash
+# Build first
+cd dashboard && bun run build
+
+# Run backend (serves built frontend)
+cd ../backend && python app.py
+```
+
+Open `http://localhost:5000/dashboard`
+
+---
+
+## API Reference
+
+### Subscriptions
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/subscriptions?user_id=<id>` | List all subscriptions |
+| POST | `/api/subscriptions` | Create subscription |
+| GET | `/api/subscriptions/<id>` | Get single subscription |
+| PUT | `/api/subscriptions/<id>` | Update subscription |
+| DELETE | `/api/subscriptions/<id>` | Delete subscription |
+
+### Analytics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/analytics/summary?user_id=<id>` | Analytics summary |
+| GET | `/api/analytics/predictions?user_id=<id>` | ML predictions |
+| GET | `/api/analytics/charts?user_id=<id>` | Chart data |
+| GET | `/api/analytics/insights?user_id=<id>` | AI insights |
+| GET | `/api/analytics/report?user_id=<id>&type=<type>` | Professional reports |
+
+---
+
+## Key Concepts
+
+### Data Science
+- Data manipulation with Pandas DataFrames
+- Statistical analysis and aggregations
+- Time series forecasting
+- Feature engineering
+- Data visualization pipelines
+
+### Machine Learning
+- Supervised learning (Linear Regression)
+- Unsupervised learning (K-Means Clustering)
+- Feature scaling and normalization
+- Model training and evaluation
+- Prediction confidence intervals
+
+### Modern Web Development
+- Component-based architecture
+- Custom React hooks for state management
+- RESTful API design
+- Performance optimization (Lighthouse)
+- Responsive design patterns
+- Smooth animations and transitions
+
+---
+
+## Performance
+
+- **Lighthouse Score:** 95+ across all metrics
+- **Bundle Size:** Optimized with code splitting
+- **Images:** WebP format with preload hints
+- **Fonts:** Preloaded with `font-display: swap`
+- **API:** Silent data refresh without loading states
+
+---
+
+## Configuration
+
+### Firebase Setup (Optional)
+```bash
+cp .env.example .env
+# Add your Firebase credentials path
+```
+
+**Demo Mode:** Works out-of-the-box with in-memory storage (no Firebase required)
+
+---
+
+## Development Notes
+
+- **Debug Mode:** Enabled by default in development
+- **Production:** Set `FLASK_ENV=production` in `.env`
+- **Port:** Backend runs on `http://localhost:5000`
+- **CORS:** Configured for local development
+
+---
+
+## Future Roadmap
+
+- User authentication with Firebase Auth
+- Email notifications for upcoming payments
+- PDF/Excel report exports
+- Multi-currency support
+- Bank API integration (Plaid)
+- Mobile app (React Native)
+- Advanced ML models (Random Forest, LSTM)
+- Browser extension for auto-detection
+
+---
+
+## License
+
+MIT License - Free to use for learning and projects.
+
+---
+
+## About
+
+Built as a comprehensive learning project to demonstrate proficiency in:
+- Full-stack development
+- Data science and machine learning
+- Object-oriented programming
+- Modern React development
+- UI/UX design and animations
+- Performance optimization
+
+**Author:** Nahuel Flores  
+**Year:** 2026

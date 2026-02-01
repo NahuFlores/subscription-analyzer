@@ -96,6 +96,7 @@ class CostPredictor:
             
             predictions.append({
                 'month': future_date.strftime('%Y-%m'),
+                'date': future_date.strftime('%Y-%m-%d'),  # ISO format for JavaScript
                 'predicted_cost': round(float(predicted_cost), 2),
                 'confidence': 'high' if i < 3 else 'medium' if i < 5 else 'low'
             })

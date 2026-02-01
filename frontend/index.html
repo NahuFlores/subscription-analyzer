@@ -4,7 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg" />
     <title>Subscription Analyzer - Track & Optimize Your Subscriptions</title>
+
+    <!-- SEO & Metatags -->
+    <meta name="description"
+        content="Stop wasting money on unused subscriptions. Track, analyze, and optimize your monthly expenses with our AI-powered Python tool. Start saving today!">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://subscription-analyzer.demo/">
+    <meta property="og:title" content="Subscription Analyzer - AI Expense Tracker">
+    <meta property="og:description"
+        content="Stop wasting money on unused subscriptions. Track, analyze, and optimize your monthly expenses with our AI-powered Python tool.">
+    <meta property="og:image" content="assets/images/og-image.jpg">
     <link rel="preload" href="assets/fonts/Inter-Variable.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="assets/css/fonts.css">
     <link rel="stylesheet" href="assets/css/style.css">
@@ -17,11 +30,7 @@
 </head>
 
 <body>
-    <!-- Particle Effect Container -->
-    <div id="particle-container" class="particle-hero">
-        <div class="bg-orb orb-hero"></div>
-        <canvas id="particle-canvas"></canvas>
-
+    <header>
         <!-- Magic Indicator Navbar -->
         <div class="magic-navbar-container">
             <nav id="magic-navbar" aria-label="Main navigation">
@@ -41,7 +50,7 @@
                         <a href="#tech" class="magic-nav-link" role="menuitem">Technology</a>
                     </li>
                     <li role="none">
-                        <a href="dashboard.html" class="magic-nav-link" role="menuitem">Dashboard</a>
+                        <a href="/dashboard" class="magic-nav-link" role="menuitem">Dashboard</a>
                     </li>
 
                 </ul>
@@ -65,127 +74,136 @@
                         <a href="#tech" class="mobile-nav-link" role="menuitem">Technology</a>
                     </li>
                     <li role="none">
-                        <a href="dashboard.html" class="mobile-nav-link" role="menuitem">Dashboard</a>
+                        <a href="/dashboard" class="mobile-nav-link" role="menuitem">Dashboard</a>
                     </li>
 
                 </ul>
             </div>
         </div>
+    </header>
 
-        <!-- Hero Content -->
-        <div class="hero-content">
+    <main>
+        <!-- Particle Effect Container -->
+        <section id="particle-container" class="particle-hero" aria-label="Hero Section">
+            <div class="bg-orb orb-hero"></div>
+            <canvas id="particle-canvas"></canvas>
 
-            <h1 class="hero-title">
-                <span class="title-line">Smart</span>
-                <span class="title-line">Expense</span>
-                <span class="title-line">Analyzer</span>
-            </h1>
+            <!-- Hero Content -->
+            <div class="hero-content">
 
-            <p class="hero-description">
-                Experience the power of data science. Track, analyze, and optimize your subscriptions with AI-powered
-                insights using Pandas, NumPy, and Scikit-learn.
-            </p>
+                <h1 class="hero-title">
+                    <span class="title-line">Smart</span>
+                    <span class="title-line">Expense</span>
+                    <span class="title-line">Analyzer</span>
+                </h1>
 
-            <div class="hero-cta">
-                <a href="dashboard.html" class="btn btn-primary btn-large btn-glow">
-                    <span>Launch Dashboard</span>
-                    <span class="btn-arrow">→</span>
-                </a>
-            </div>
-        </div>
+                <p class="hero-description">
+                    Experience the power of data science. Track, analyze, and optimize your subscriptions with
+                    AI-powered
+                    insights using Pandas, NumPy, and Scikit-learn.
+                </p>
 
-
-    </div>
-
-    <!-- Features Section - Bento Layout -->
-    <section id="features" class="features-section">
-        <!-- Ambient Background Elements -->
-        <div class="features-bg-ambient">
-            <div class="bg-grid"></div>
-            <div class="bg-orb orb-1"></div>
-            <div class="bg-orb orb-2"></div>
-            <div class="bg-particles" id="ambient-particles"></div>
-        </div>
-
-        <h2>Built with Modern Technologies</h2>
-
-        <div class="bento-grid">
-            <!-- SVG Connector Lines - Fluid Flow Effect -->
-            <svg class="connector-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <!-- Adjusted for precision: originating precisely from the inner corners of bento cards -->
-                <line class="connector-line line-1" x1="27.5" y1="27.5" x2="46" y2="46" />
-                <line class="connector-line line-2" x1="72.5" y1="27.5" x2="54" y2="46" />
-                <line class="connector-line line-3" x1="27.5" y1="72.5" x2="46" y2="54" />
-                <line class="connector-line line-4" x1="72.5" y1="72.5" x2="54" y2="54" />
-            </svg>
-
-            <!-- Top Left Card -->
-            <div class="feature-card bento-card">
-                <h3>Smart Analytics</h3>
-                <p>Comprehensive data analysis with Pandas & NumPy</p>
-            </div>
-
-            <!-- Top Right Card -->
-            <div class="feature-card bento-card">
-                <h3>ML Predictions</h3>
-                <p>Cost forecasting with Scikit-learn</p>
-            </div>
-
-            <!-- Center Robot - Controlled Animation -->
-            <div class="bento-center">
-                <img id="robot-sprite" src="assets/images/robot-split/frame_000_delay-0.02s.gif" alt="AI Robot"
-                    class="bento-gif robot-gif">
-            </div>
-
-            <!-- Bottom Left Card -->
-            <div class="feature-card bento-card">
-                <h3>Visual Insights</h3>
-                <p>Interactive charts with Plotly</p>
-            </div>
-
-            <!-- Bottom Right Card -->
-            <div class="feature-card bento-card">
-                <h3>Save Money</h3>
-                <p>Identify savings opportunities automatically</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Tech Stack Section -->
-    <section id="tech" class="tech-stack">
-        <div class="bg-orb orb-tech-right"></div>
-        <div class="tech-container">
-            <div class="tech-header">
-                <span class="tech-label">Technology Stack</span>
-                <h2 class="tech-headline">Built for Performance</h2>
-                <p class="tech-description">Leveraging industry-leading tools and frameworks to deliver accurate,
-                    real-time subscription insights.</p>
-            </div>
-
-            <div class="marquee-container">
-                <div class="marquee-track">
-                    <!-- Original Set -->
-                    <div class="marquee-item"><img src="assets/icons/tech/python.svg" alt="Python" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/pandas.svg" alt="Pandas" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/numpy.svg" alt="NumPy" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/flask.svg" alt="Flask" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/scikit-learn.svg" alt="Scikit" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/firebase.svg" alt="Firebase" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/matplotlib.svg" alt="Matplotlib" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/javascript.svg" alt="JS" /></div>
-                    <!-- Duplicate Set -->
-                    <div class="marquee-item"><img src="assets/icons/tech/python.svg" alt="Python" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/pandas.svg" alt="Pandas" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/numpy.svg" alt="NumPy" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/flask.svg" alt="Flask" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/scikit-learn.svg" alt="Scikit" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/firebase.svg" alt="Firebase" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/matplotlib.svg" alt="Matplotlib" /></div>
-                    <div class="marquee-item"><img src="assets/icons/tech/javascript.svg" alt="JS" /></div>
+                <div class="hero-cta">
+                    <a href="/dashboard" class="btn btn-primary btn-large btn-glow">
+                        <span>Launch Dashboard</span>
+                        <span class="btn-arrow">→</span>
+                    </a>
                 </div>
             </div>
-        </div>
-    </section>
+
+
+        </section>
+
+        <!-- Features Section - Bento Layout -->
+        <section id="features" class="features-section">
+            <!-- Ambient Background Elements -->
+            <div class="features-bg-ambient">
+                <div class="bg-grid"></div>
+                <div class="bg-orb orb-1"></div>
+                <div class="bg-orb orb-2"></div>
+                <div class="bg-particles" id="ambient-particles"></div>
+            </div>
+
+            <h2>Built with Modern Technologies</h2>
+
+            <div class="bento-grid">
+                <!-- SVG Connector Lines - Fluid Flow Effect -->
+                <svg class="connector-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <!-- Adjusted for precision: originating precisely from the inner corners of bento cards -->
+                    <line class="connector-line line-1" x1="27.5" y1="27.5" x2="46" y2="46" />
+                    <line class="connector-line line-2" x1="72.5" y1="27.5" x2="54" y2="46" />
+                    <line class="connector-line line-3" x1="27.5" y1="72.5" x2="46" y2="54" />
+                    <line class="connector-line line-4" x1="72.5" y1="72.5" x2="54" y2="54" />
+                </svg>
+
+                <!-- Top Left Card -->
+                <div class="feature-card bento-card">
+                    <h3>Smart Analytics</h3>
+                    <p>Comprehensive data analysis with Pandas & NumPy</p>
+                </div>
+
+                <!-- Top Right Card -->
+                <div class="feature-card bento-card">
+                    <h3>ML Predictions</h3>
+                    <p>Cost forecasting with Scikit-learn</p>
+                </div>
+
+                <!-- Center Robot - Controlled Animation -->
+                <div class="bento-center">
+                    <img id="robot-sprite" src="assets/images/robot-split/frame_000_delay-0.02s.gif" alt="AI Robot"
+                        class="bento-gif robot-gif">
+                </div>
+
+                <!-- Bottom Left Card -->
+                <div class="feature-card bento-card">
+                    <h3>Visual Insights</h3>
+                    <p>Interactive charts with Plotly</p>
+                </div>
+
+                <!-- Bottom Right Card -->
+                <div class="feature-card bento-card">
+                    <h3>Save Money</h3>
+                    <p>Identify savings opportunities automatically</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack Section -->
+        <section id="tech" class="tech-stack">
+            <div class="bg-orb orb-tech-right"></div>
+            <div class="tech-container">
+                <div class="tech-header">
+                    <span class="tech-label">Technology Stack</span>
+                    <h2 class="tech-headline">Built for Performance</h2>
+                    <p class="tech-description">Leveraging industry-leading tools and frameworks to deliver accurate,
+                        real-time subscription insights.</p>
+                </div>
+
+                <div class="marquee-container">
+                    <div class="marquee-track">
+                        <!-- Original Set -->
+                        <div class="marquee-item"><img src="assets/icons/tech/python.svg" alt="Python" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/pandas.svg" alt="Pandas" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/numpy.svg" alt="NumPy" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/flask.svg" alt="Flask" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/scikit-learn.svg" alt="Scikit" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/firebase.svg" alt="Firebase" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/matplotlib.svg" alt="Matplotlib" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/javascript.svg" alt="JS" /></div>
+                        <!-- Duplicate Set -->
+                        <div class="marquee-item"><img src="assets/icons/tech/python.svg" alt="Python" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/pandas.svg" alt="Pandas" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/numpy.svg" alt="NumPy" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/flask.svg" alt="Flask" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/scikit-learn.svg" alt="Scikit" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/firebase.svg" alt="Firebase" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/matplotlib.svg" alt="Matplotlib" /></div>
+                        <div class="marquee-item"><img src="assets/icons/tech/javascript.svg" alt="JS" /></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -199,7 +217,7 @@
     <script src="assets/js/robot-animation.js"></script>
 
     <!-- Lenis Smooth Scroll -->
-    <script src="https://unpkg.com/lenis@1.3.17/dist/lenis.min.js"></script> 
+    <script src="https://unpkg.com/lenis@1.3.17/dist/lenis.min.js"></script>
     <script src="assets/js/lenis-init.js"></script>
 </body>
 
