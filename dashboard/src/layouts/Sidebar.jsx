@@ -1,13 +1,16 @@
-import { BarChart2, LogOut } from 'lucide-react';
+import { BarChart2, LogOut, Sparkles, Loader2, Check, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from '../components/ui/GlassCard';
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const Sidebar = ({ isMobileOpen, closeMobile }) => {
     const [activeTab, setActiveTab] = useState('Analytics');
     const [isHovered, setIsHovered] = useState(false);
     const [isLogoutBtnHovered, setIsLogoutBtnHovered] = useState(false);
+    const [isDemoBtnHovered, setIsDemoBtnHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [demoStatus, setDemoStatus] = useState('idle'); // idle, loading, success, error
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -15,6 +18,48 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    const handleLoadDemoData = async () => {
+        if (demoStatus === 'loading') return;
+
+        setDemoStatus('loading');
+        try {
+            const response = await fetch(`${API_BASE_URL}/subscriptions/seed-demo`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                setDemoStatus('success');
+                // Refresh page after short delay to show new data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                setDemoStatus('error');
+                setTimeout(() => setDemoStatus('idle'), 3000);
+            }
+        } catch (error) {
+            console.error('Error loading demo data:', error);
+            setDemoStatus('error');
+            setTimeout(() => setDemoStatus('idle'), 3000);
+        }
+    };
+
+    const getDemoButtonContent = () => {
+        switch (demoStatus) {
+            case 'loading':
+                return { icon: Loader2, text: 'Loading...', className: 'animate-spin' };
+            case 'success':
+                return { icon: Check, text: 'Loaded!', className: 'text-green-400' };
+            case 'error':
+                return { icon: AlertCircle, text: 'Error', className: 'text-red-400' };
+            default:
+                return { icon: Sparkles, text: 'Load Demo Data', className: '' };
+        }
+    };
+
+    const demoContent = getDemoButtonContent();
 
     const menuItems = [
         { icon: BarChart2, label: 'Analytics' },
@@ -51,14 +96,20 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                 className={`
                     fixed top-1/2 -translate-y-1/2 h-[calc(100vh-2rem)] 
                     z-50 
-                    bg-dark/90 md:bg-transparent
+                    md:bg-transparent!
                     flex flex-col overflow-hidden
                     left-4 md:left-6
                     will-change-[width,transform,opacity]
+                    animate-[backdrop-keepalive_0.1s_linear_infinite]
+                    shadow-[0_21px_40px_-2px_rgba(0,0,0,0.8)]
                 `}
+                style={{
+                    backdropFilter: 'blur(20px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(150%)'
+                }}
             >
-                {/* Gradient Border Glow (Simulated with absolute div) */}
-                <div className="absolute inset-0 rounded-[24px] p-px -z-10 bg-linear-to-b from-primary/20 via-accent-purple/10 to-accent-pink/20 opacity-50 pointer-events-none" />
+                {/* Gradient Border - Matches magic-navbar vibe */}
+                <div className="absolute inset-0 rounded-[24px] p-px -z-10 bg-linear-to-b from-white/30 via-white/5 to-white/10 opacity-50 pointer-events-none" />
 
                 {/* Logo Section */}
                 <div className="h-20 flex items-center px-6 border-b border-white/5 relative shrink-0">
@@ -133,6 +184,54 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                     ))}
                 </nav>
 
+                {/* Demo Data Button */}
+                <div className="px-4 pb-2">
+                    <button
+                        onClick={handleLoadDemoData}
+                        onMouseEnter={() => setIsDemoBtnHovered(true)}
+                        onMouseLeave={() => setIsDemoBtnHovered(false)}
+                        disabled={demoStatus === 'loading' || demoStatus === 'success'}
+                        aria-label="Load Demo Data"
+                        className={`relative group flex items-center rounded-xl transition-all duration-300 w-full overflow-hidden h-12 text-left cursor-pointer z-20
+                            ${demoStatus === 'success' ? 'text-green-400' : demoStatus === 'error' ? 'text-red-400' : 'text-accent-purple/80 hover:text-accent-purple'}
+                            ${demoStatus === 'loading' || demoStatus === 'success' ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                        {/* Dynamic Background */}
+                        <AnimatePresence>
+                            {(isDemoBtnHovered && demoStatus === 'idle') && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-accent-purple/10 border border-accent-purple/20 rounded-xl"
+                                    transition={{ duration: 0.2 }}
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        <div className="w-[48px] h-full flex items-center justify-center shrink-0 relative z-10">
+                            <demoContent.icon
+                                size={22}
+                                strokeWidth={2}
+                                className={`${demoContent.className} ${isDemoBtnHovered && demoStatus === 'idle' ? "text-accent-purple drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" : ""}`}
+                            />
+                        </div>
+                        <AnimatePresence>
+                            {(isHovered || isMobileOpen) && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="ml-1 text-sm font-medium whitespace-nowrap relative z-10"
+                                >
+                                    {demoContent.text}
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </button>
+                </div>
+
                 {/* Logout */}
                 <div className="p-4 mt-auto">
                     <button
@@ -183,3 +282,4 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
 };
 
 export default Sidebar;
+

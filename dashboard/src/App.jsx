@@ -12,6 +12,8 @@ import RadialMenu from './components/ui/RadialMenu';
 import { DollarSign, CreditCard, TrendingDown, Calendar, LayoutDashboard, FileBarChart } from 'lucide-react';
 import { useState } from 'react';
 
+import DashboardSkeleton from './components/dashboard/DashboardSkeleton';
+
 function App() {
   const { data, loading, refetch } = useDashboardData();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -20,9 +22,7 @@ function App() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full text-primary animate-pulse">
-          Loading Dashboard...
-        </div>
+        <DashboardSkeleton />
       </DashboardLayout>
     );
   }

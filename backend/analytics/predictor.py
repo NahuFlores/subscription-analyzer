@@ -37,7 +37,8 @@ class CostPredictor:
     
     def predict_future_costs(self, months_ahead: int = 6) -> Dict:
         """
-        Predict future monthly costs using Linear Regression
+        Predict future monthly costs using simulated realistic trends
+        Creates curved data points for better visualization
         
         Args:
             months_ahead: Number of months to predict
@@ -48,65 +49,82 @@ class CostPredictor:
         if not self.subscriptions:
             return {'predictions': [], 'trend': 'stable'}
         
-        # Simulate historical data (in real app, this would come from database)
-        # For now, we'll create a simple trend based on current subscriptions
-        current_monthly = sum(sub.calculate_annual_cost() / 12 
+        # Calculate base monthly cost
+        base_monthly = sum(sub.calculate_annual_cost() / 12 
                             for sub in self.subscriptions if sub.is_active)
         
-        # Create simple time series (last 6 months + future)
+        # Simulate historical data (6 months back)
         historical_months = 6
         total_months = historical_months + months_ahead
         
-        # Simulate slight growth trend (2-5% monthly)
-        np.random.seed(42)
-        growth_rate = 1.02  # 2% monthly growth
+        # Create curves using sine wave + slight upward trend + noise
+        np.random.seed(42)  # For consistent "randomness"
         
-        X = np.arange(total_months).reshape(-1, 1)
-        y = np.array([current_monthly * (growth_rate ** i) 
-                     for i in range(-historical_months, months_ahead)])
+        # Time points
+        t = np.linspace(0, total_months, total_months)
         
-        # Add some noise to historical data
-        y[:historical_months] += np.random.normal(0, current_monthly * 0.05, historical_months)
+        # 1. Base trend (slight increase over time, typical of subscriptions)
+        trend = np.linspace(0, base_monthly * 0.15, total_months)
         
-        # Train model on historical data
-        X_train = X[:historical_months]
-        y_train = y[:historical_months]
+        # 2. Seasonality/Curve (Sine wave to create the "curves" requested)
+        # Represents variable billing, usage fees, or seasonal changing
+        amplitude = base_monthly * 0.05  # 5% fluctuation
+        seasonality = amplitude * np.sin(t * 0.8)
         
-        self.model.fit(X_train, y_train)
+        # 3. Random noise (small variations)
+        noise = np.random.normal(0, base_monthly * 0.02, total_months)
         
-        # Predict future
-        y_pred = self.model.predict(X)
+        # Combine components
+        values = base_monthly + trend + seasonality + noise
         
-        # Determine trend
-        slope = self.model.coef_[0]
-        if slope > current_monthly * 0.01:  # Growing more than 1% per month
-            trend = 'increasing'
-        elif slope < -current_monthly * 0.01:
-            trend = 'decreasing'
+        # Ensure smooth transition for "today"
+        # The value at index [historical_months] should be close to actual base_monthly
+        current_simulated = values[historical_months]
+        correction = base_monthly - current_simulated
+        values += correction
+        
+        # Determine trend direction based on the curve
+        first_val = values[historical_months]
+        last_val = values[-1]
+        
+        if last_val > first_val * 1.05:
+            trend_direction = 'increasing'
+        elif last_val < first_val * 0.95:
+            trend_direction = 'decreasing'
         else:
-            trend = 'stable'
+            trend_direction = 'stable'
         
-        # Create predictions list
+        # Create predictions list (now including history for chart context)
         predictions = []
         today = datetime.now()
         
-        for i in range(months_ahead):
-            future_date = today + timedelta(days=30 * (i + 1))
-            predicted_cost = y_pred[historical_months + i]
+        # We'll return the full set of points (history + future) so the chart looks complete
+        start_date = today - timedelta(days=30 * historical_months)
+        
+        for i in range(total_months):
+            # Calculate date for this point
+            # Iterate roughly month by month
+            point_date = start_date + timedelta(days=30 * i)
+            
+            p_cost = values[i]
+            p_cost = max(0, p_cost)
+            
+            is_future = i >= historical_months
             
             predictions.append({
-                'month': future_date.strftime('%Y-%m'),
-                'date': future_date.strftime('%Y-%m-%d'),  # ISO format for JavaScript
-                'predicted_cost': round(float(predicted_cost), 2),
-                'confidence': 'high' if i < 3 else 'medium' if i < 5 else 'low'
+                'month': point_date.strftime('%Y-%m'),
+                'date': point_date.strftime('%Y-%m-%d'),
+                'predicted_cost': round(float(p_cost), 2),
+                'is_prediction': is_future,
+                'confidence': 'high' if i < historical_months + 3 else 'medium'
             })
-        
+            
         result = {
             'predictions': predictions,
-            'trend': trend,
-            'current_monthly_cost': round(current_monthly, 2),
-            'predicted_6_month_cost': round(float(y_pred[-1]), 2),
-            'total_predicted_cost': round(float(sum(p['predicted_cost'] for p in predictions)), 2)
+            'trend': trend_direction,
+            'current_monthly_cost': round(base_monthly, 2),
+            'predicted_6_month_cost': round(float(predictions[-1]['predicted_cost']), 2),
+            'total_predicted_cost': round(float(sum(p['predicted_cost'] for p in predictions if p['is_prediction'])), 2)
         }
         return sanitize_for_json(result)
     

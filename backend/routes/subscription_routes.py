@@ -186,3 +186,49 @@ def delete_subscription(subscription_id):
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@subscription_bp.route('/seed-demo', methods=['POST'])
+def seed_demo_data():
+    """Seed demo data for portfolio showcase"""
+    try:
+        from utils.demo_seed import seed_demo_data as do_seed, DEMO_USER_ID
+        
+        result = do_seed(clear_existing=True)
+        
+        return jsonify({
+            'success': result['success'],
+            'message': f"Created {result['created']} demo subscriptions",
+            'user_id': DEMO_USER_ID,
+            'created': result['created'],
+            'cleared': result.get('cleared', 0),
+            'errors': result['errors'] if result['errors'] else None
+        }), 201 if result['success'] else 500
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@subscription_bp.route('/clear-demo', methods=['DELETE'])
+def clear_demo_data():
+    """Clear demo data"""
+    try:
+        from utils.demo_seed import DEMO_USER_ID
+        
+        # Get and delete all demo user subscriptions
+        subscriptions = FirebaseHelper.get_user_subscriptions(DEMO_USER_ID)
+        deleted = 0
+        
+        for sub in subscriptions:
+            if FirebaseHelper.delete_subscription(sub.get('subscription_id')):
+                deleted += 1
+        
+        return jsonify({
+            'success': True,
+            'message': f"Deleted {deleted} demo subscriptions",
+            'deleted': deleted
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

@@ -62,7 +62,7 @@ export const useDashboardData = () => {
                             name: monthName,
                             cost: prediction.predicted_cost,
                             date: prediction.date,
-                            isPrediction: true
+                            isPrediction: prediction.is_prediction !== undefined ? prediction.is_prediction : true
                         };
                     });
                 }

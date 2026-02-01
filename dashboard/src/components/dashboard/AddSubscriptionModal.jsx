@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { buildApiUrl } from '../../config/api';
 
 const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         cost: '',
@@ -15,22 +16,22 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
 
+        setIsSubmitting(true);
         try {
             const payload = {
-                user_id: 'demo_user', // Hardcoded as per current scope
+                user_id: 'demo_user',
                 name: formData.name,
                 cost: parseFloat(formData.cost),
                 category: formData.category,
-                billing_cycle: 'monthly', // Defaulting for simple form, could be expanded
+                billing_cycle: 'monthly',
                 start_date: formData.renewal_date || new Date().toISOString().split('T')[0]
             };
 
             const response = await fetch(buildApiUrl('/subscriptions'), {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
@@ -39,22 +40,21 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                 throw new Error(errorData.error || 'Failed to add subscription');
             }
 
-            // Success - wait a bit for backend to fully process
+            // Success
             console.log('✅ Subscription added successfully');
 
-            // Close modal and reset form first
+            // Trigger refresh immediately
+            await onSuccess?.();
+
+            // Close and reset
             onClose();
             setFormData({ name: '', cost: '', category: 'Entertainment', renewal_date: '' });
-
-            // Delay refetch slightly to ensure backend has saved the data
-            setTimeout(() => {
-                console.log('🔄 Refreshing dashboard data...');
-                onSuccess?.();
-            }, 500);
 
         } catch (err) {
             console.error("Failed to add subscription:", err);
             alert("Error adding subscription: " + (err.message || "Unknown error"));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -72,6 +72,7 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10 transition-all placeholder:text-white/30"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        disabled={isSubmitting}
                     />
                 </div>
 
@@ -100,6 +101,7 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                                         e.preventDefault();
                                     }
                                 }}
+                                disabled={isSubmitting}
                             />
                         </div>
                     </div>
@@ -110,6 +112,7 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/10 transition-all appearance-none cursor-pointer"
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            disabled={isSubmitting}
                         >
                             <option value="Entertainment" className="bg-[#1a1a1a]">Entertainment</option>
                             <option value="Productivity" className="bg-[#1a1a1a]">Productivity</option>
@@ -128,16 +131,23 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                         value={formData.renewal_date}
                         onChange={(date) => setFormData({ ...formData, renewal_date: date })}
                         placeholder="Select renewal date..."
+                        disabled={isSubmitting}
                     />
                 </div>
 
                 {/* Actions */}
                 <div className="pt-4 flex gap-3">
-                    <Button type="button" variant="ghost" onClick={onClose} className="flex-1">
+                    <Button type="button" variant="ghost" onClick={onClose} className="flex-1" disabled={isSubmitting}>
                         Cancel
                     </Button>
-                    <Button type="submit" variant="cta" icon={Plus} className="flex-1">
-                        Add Subscription
+                    <Button
+                        type="submit"
+                        variant="cta"
+                        icon={Plus}
+                        className="flex-1"
+                        loading={isSubmitting}
+                    >
+                        {isSubmitting ? 'Adding...' : 'Add Subscription'}
                     </Button>
                 </div>
             </form>
