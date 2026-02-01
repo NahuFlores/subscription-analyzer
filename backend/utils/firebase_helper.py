@@ -5,6 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from typing import Dict, List, Optional
 import os
+import json
 from .memory_storage import get_storage
 
 
@@ -23,6 +24,10 @@ class FirebaseHelper:
         """
         Initialize Firebase Admin SDK
         
+        Supports two methods:
+        1. FIREBASE_CREDENTIALS env var containing the full JSON string (for Render/production)
+        2. FIREBASE_CREDENTIALS_PATH env var with path to JSON file (for local development)
+        
         Args:
             credentials_path: Path to Firebase credentials JSON file
         """
@@ -32,24 +37,39 @@ class FirebaseHelper:
         # Always initialize in-memory storage as fallback
         if cls._storage is None:
             cls._storage = get_storage()
-            print("In-memory storage initialized for demo mode")
+            print("In-memory storage initialized as fallback")
         
         try:
-            if credentials_path and os.path.exists(credentials_path):
+            cred = None
+            
+            # Method 1: Check for FIREBASE_CREDENTIALS env var (JSON string - for Render)
+            credentials_json = os.getenv('FIREBASE_CREDENTIALS')
+            if credentials_json:
+                try:
+                    cred_dict = json.loads(credentials_json)
+                    cred = credentials.Certificate(cred_dict)
+                    print("Firebase credentials loaded from FIREBASE_CREDENTIALS env var")
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing FIREBASE_CREDENTIALS JSON: {e}")
+            
+            # Method 2: Check for credentials file path
+            if cred is None and credentials_path and os.path.exists(credentials_path):
                 cred = credentials.Certificate(credentials_path)
+                print("Firebase credentials loaded from file path")
+            
+            # Initialize Firebase if credentials found
+            if cred:
                 firebase_admin.initialize_app(cred)
+                cls._db = firestore.client()
+                cls._initialized = True
+                print("Firebase initialized successfully - data will persist!")
             else:
-                # For development without credentials
-                # In production, you MUST provide credentials
-                print("Warning: Running without Firebase credentials (development mode)")
-                print("   Data will not persist. Set FIREBASE_CREDENTIALS_PATH in .env")
-                # Don't initialize Firebase in this case
+                # No credentials available
+                print("Warning: Running without Firebase credentials (demo mode)")
+                print("   Data will NOT persist across restarts.")
+                print("   Set FIREBASE_CREDENTIALS env var with JSON content to enable persistence.")
                 cls._initialized = True
                 return
-            
-            cls._db = firestore.client()
-            cls._initialized = True
-            print("Firebase initialized successfully")
             
         except Exception as e:
             print(f"Error initializing Firebase: {e}")
