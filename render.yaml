@@ -3,7 +3,7 @@ services:
     name: subscription-analyzer
     runtime: python
     buildCommand: bash build.sh
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 backend.app:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --max-requests 1000 --max-requests-jitter 50 backend.app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0

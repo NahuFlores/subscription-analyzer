@@ -1,13 +1,10 @@
 """
 Report Generator - Create static visualizations and PDF reports using Matplotlib and Seaborn
 This module demonstrates Data Science visualization skills for academic/portfolio purposes
+
+NOTE: Heavy libraries (matplotlib, seaborn, pandas, numpy) are lazy-loaded inside methods
+to reduce memory footprint when reports are not being generated.
 """
-import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend for server use
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
-import numpy as np
 from typing import List, Dict, Optional
 from datetime import datetime
 import io
@@ -33,6 +30,12 @@ class ReportGenerator:
     
     def _setup_style(self):
         """Configure matplotlib and seaborn styling for professional reports"""
+        # Lazy load heavy libraries only when needed
+        import matplotlib
+        matplotlib.use('Agg')  # Non-interactive backend for server use
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        
         # Set seaborn style for better aesthetics
         sns.set_style("darkgrid")
         sns.set_palette("husl")
@@ -58,6 +61,11 @@ class ReportGenerator:
         """
         if not self.subscriptions:
             return ""
+        
+        # Lazy load libraries
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import pandas as pd
         
         # Prepare data
         categories = [sub.category for sub in self.subscriptions if sub.is_active]
@@ -103,6 +111,12 @@ class ReportGenerator:
         """
         if not self.subscriptions:
             return ""
+        
+        # Lazy load libraries
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import pandas as pd
+        import numpy as np
         
         # Prepare data
         active_subs = [sub for sub in self.subscriptions if sub.is_active]
@@ -171,6 +185,11 @@ class ReportGenerator:
         if not self.subscriptions:
             return ""
         
+        # Lazy load libraries
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import numpy as np
+        
         active_subs = [sub for sub in self.subscriptions if sub.is_active]
         costs = np.array([sub.cost for sub in active_subs])
         
@@ -223,6 +242,11 @@ class ReportGenerator:
             return ""
         
         try:
+            # Lazy load libraries
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            import pandas as pd
+            
             # Prepare data
             data = []
             for sub in active_subs:
@@ -294,6 +318,8 @@ class ReportGenerator:
         Returns:
             Base64 encoded image string
         """
+        import matplotlib.pyplot as plt
+        
         buffer = io.BytesIO()
         fig.savefig(buffer, format='png', bbox_inches='tight')
         buffer.seek(0)
