@@ -25,7 +25,7 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                 start_date: formData.renewal_date || new Date().toISOString().split('T')[0]
             };
 
-            const response = await fetch('http://127.0.0.1:5000/api/subscriptions', {
+            const response = await fetch('/api/subscriptions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

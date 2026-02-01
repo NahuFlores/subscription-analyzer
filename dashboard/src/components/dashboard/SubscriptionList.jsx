@@ -21,7 +21,7 @@ const SubscriptionList = ({ subscriptions = [], onUpdate }) => {
 
         setDeletingId(sub.id);
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/subscriptions/${sub.id}`, {
+            const response = await fetch(`/api/subscriptions/${sub.id}`, {
                 method: 'DELETE',
             });
 
