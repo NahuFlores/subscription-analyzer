@@ -3,6 +3,7 @@ import Button from '../ui/Button';
 import DatePicker from '../ui/DatePicker';
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { buildApiUrl } from '../../config/api';
 
 const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                 start_date: formData.renewal_date || new Date().toISOString().split('T')[0]
             };
 
-            const response = await fetch('/api/subscriptions', {
+            const response = await fetch(buildApiUrl('/subscriptions'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,10 +39,18 @@ const AddSubscriptionModal = ({ isOpen, onClose, onSuccess }) => {
                 throw new Error(errorData.error || 'Failed to add subscription');
             }
 
-            // Success
-            onSuccess?.(); // Trigger refresh
+            // Success - wait a bit for backend to fully process
+            console.log('✅ Subscription added successfully');
+
+            // Close modal and reset form first
             onClose();
-            setFormData({ name: '', cost: '', category: 'Entertainment', renewal_date: '' }); // Reset
+            setFormData({ name: '', cost: '', category: 'Entertainment', renewal_date: '' });
+
+            // Delay refetch slightly to ensure backend has saved the data
+            setTimeout(() => {
+                console.log('🔄 Refreshing dashboard data...');
+                onSuccess?.();
+            }, 500);
 
         } catch (err) {
             console.error("Failed to add subscription:", err);

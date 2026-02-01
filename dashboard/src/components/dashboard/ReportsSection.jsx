@@ -3,9 +3,7 @@ import { Download, BarChart3, PieChart, TrendingUp, Grid3x3 } from 'lucide-react
 import GlassCard from '../ui/GlassCard';
 import Button from '../ui/Button';
 import anime from 'animejs';
-
-const API_BASE = '/api';
-const USER_ID = 'demo_user';
+import { API_BASE_URL as API_BASE, USER_ID } from '../../config/api';
 
 const ReportsSection = () => {
     const [reports, setReports] = useState({});

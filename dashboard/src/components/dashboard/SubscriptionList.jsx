@@ -3,6 +3,7 @@ import { Search, Pencil, Trash2 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { buildApiUrl } from '../../config/api';
 
 const SubscriptionList = ({ subscriptions = [], onUpdate }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +22,7 @@ const SubscriptionList = ({ subscriptions = [], onUpdate }) => {
 
         setDeletingId(sub.id);
         try {
-            const response = await fetch(`/api/subscriptions/${sub.id}`, {
+            const response = await fetch(buildApiUrl(`/subscriptions/${sub.id}`), {
                 method: 'DELETE',
             });
 

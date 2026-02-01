@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-
-const API_BASE = '/api';
-const USER_ID = 'demo_user';
+import { API_BASE_URL as API_BASE, USER_ID } from '../config/api';
 
 // Color palette matching dashboard theme
 const CATEGORY_COLORS = {
@@ -85,6 +83,12 @@ export const useDashboardData = () => {
                     expenseTrend: expenseChartData
                 }
             };
+
+            console.log('📊 Dashboard data updated:', {
+                subscriptions: newData.subscriptions.length,
+                totalCost: newData.stats.total_cost,
+                activeSubs: newData.stats.active_subs
+            });
 
             setData(newData);
 
