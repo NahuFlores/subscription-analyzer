@@ -14,7 +14,7 @@ class Config:
     # Flask configuration
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
-    DEBUG = os.getenv('FLASK_DEBUG', 'True') == 'True'
+    DEBUG = FLASK_ENV != 'production'
     
     # Server configuration
     HOST = os.getenv('HOST', '0.0.0.0')
@@ -23,9 +23,26 @@ class Config:
     # Firebase configuration
     FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', '')
     
-    # CORS configuration
-    # CORS configuration
-    CORS_ORIGINS = ['http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:5173', 'http://127.0.0.1:5173', '*']
+    # CORS configuration - dynamically set based on environment
+    @staticmethod
+    def get_cors_origins():
+        """Get CORS origins based on environment"""
+        if Config.FLASK_ENV == 'production':
+            # In production, allow your Render domain
+            render_url = os.getenv('RENDER_EXTERNAL_URL', '')
+            if render_url:
+                return [render_url]
+            return ['*']  # Fallback, but should set RENDER_EXTERNAL_URL
+        else:
+            # Development origins
+            return [
+                'http://localhost:5000',
+                'http://127.0.0.1:5000',
+                'http://localhost:5173',
+                'http://127.0.0.1:5173'
+            ]
+    
+    CORS_ORIGINS = get_cors_origins.__func__()
 
 
 class AnalyticsConfig:

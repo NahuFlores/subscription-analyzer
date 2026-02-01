@@ -37,26 +37,36 @@ def create_app(config_class=Config):
     def index():
         return send_from_directory(app.static_folder, 'index.html')
 
-    # Dashboard routes
+    # Dashboard routes - SPA with client-side routing
     @app.route('/dashboard')
     @app.route('/dashboard/')
     @app.route('/dashboard/<path:path>')
     def dashboard(path=''):
+        """Serve the React dashboard SPA"""
         dashboard_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dashboard/dist')
         
-        response = None
-        # Check if the requested file exists in dashboard/dist
-        if path and os.path.exists(os.path.join(dashboard_folder, path)):
-            response = send_from_directory(dashboard_folder, path)
-        else:
-            # Otherwise, serve index.html for client-side routing
-            response = send_from_directory(dashboard_folder, 'index.html')
-            
-        # Disable caching for dashboard to ensure updates are seen
+        # Check if dashboard/dist exists
+        if not os.path.exists(dashboard_folder):
+            return jsonify({
+                'error': 'Dashboard not built',
+                'message': 'Run "cd dashboard && npm run build" to build the dashboard'
+            }), 503
+        
+        # Try to serve specific file if it exists (for assets)
+        if path:
+            file_path = os.path.join(dashboard_folder, path)
+            if os.path.isfile(file_path):
+                return send_from_directory(dashboard_folder, path)
+        
+        # Otherwise serve index.html for client-side routing
+        response = send_from_directory(dashboard_folder, 'index.html')
+        
+        # Disable caching for HTML to ensure updates are seen
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
+    
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():

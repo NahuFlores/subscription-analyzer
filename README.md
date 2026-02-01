@@ -231,6 +231,82 @@ cp .env.example .env
 
 ---
 
+## Deployment
+
+### Deploy to Render
+
+This project is configured for seamless deployment on [Render](https://render.com) using GitHub integration.
+
+#### Prerequisites
+- GitHub account with your repository
+- Render account (free tier available)
+
+#### Step-by-Step Guide
+
+**1. Push to GitHub**
+```bash
+git add .
+git commit -m "Add Render deployment configuration"
+git push origin main
+```
+
+**2. Create New Web Service on Render**
+- Go to [Render Dashboard](https://dashboard.render.com)
+- Click **"New +"** → **"Web Service"**
+- Connect your GitHub repository
+- Render will automatically detect `render.yaml`
+
+**3. Configure Environment Variables**
+
+In Render dashboard, add these environment variables:
+
+| Variable | Value | Required |
+|----------|-------|----------|
+| `PYTHON_VERSION` | `3.13.0` | Yes |
+| `FLASK_ENV` | `production` | Yes |
+| `SECRET_KEY` | `your-secret-key-here` | Yes |
+| `FIREBASE_CREDENTIALS_PATH` | `/etc/secrets/firebase.json` | Optional |
+
+> **Note:** For Firebase, use Render's [Secret Files](https://render.com/docs/secret-files) feature to upload your credentials JSON.
+
+**4. Deploy**
+- Click **"Create Web Service"**
+- Render will automatically:
+  - Run `build.sh` (installs dependencies + builds dashboard)
+  - Start the app with Gunicorn
+  - Provide you with a live URL
+
+**5. Verify Deployment**
+- Visit `https://your-app.onrender.com/api/health`
+- Should return: `{"status": "healthy", "version": "1.0.0"}`
+- Access dashboard at: `https://your-app.onrender.com/dashboard`
+
+#### Automatic Deployments
+
+Every push to your `main` branch will trigger an automatic deployment on Render.
+
+#### Troubleshooting
+
+**Build fails:**
+- Check build logs in Render dashboard
+- Ensure `dashboard/package.json` has valid dependencies
+- Verify Python version matches `PYTHON_VERSION` env var
+
+**Dashboard shows 503 error:**
+- Build script may have failed
+- Check that `dashboard/dist` was created during build
+- Review build logs for npm errors
+
+**CORS errors:**
+- Set `RENDER_EXTERNAL_URL` environment variable to your Render URL
+- Example: `https://your-app.onrender.com`
+
+**Firebase not working:**
+- Verify `FIREBASE_CREDENTIALS_PATH` points to correct secret file
+- Check Render logs for Firebase initialization errors
+
+---
+
 ## Development Notes
 
 - **Debug Mode:** Enabled by default in development
