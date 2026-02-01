@@ -27,7 +27,8 @@ class Config:
     @staticmethod
     def get_cors_origins():
         """Get CORS origins based on environment"""
-        if Config.FLASK_ENV == 'production':
+        flask_env = os.getenv('FLASK_ENV', 'development')
+        if flask_env == 'production':
             # In production, allow your Render domain
             render_url = os.getenv('RENDER_EXTERNAL_URL', '')
             if render_url:
@@ -39,10 +40,10 @@ class Config:
                 'http://localhost:5000',
                 'http://127.0.0.1:5000',
                 'http://localhost:5173',
-                'http://127.0.0.1:5173'
+                'http://127.0.1:5173'
             ]
     
-    CORS_ORIGINS = get_cors_origins.__func__()
+    CORS_ORIGINS = get_cors_origins()
 
 
 class AnalyticsConfig:
