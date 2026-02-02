@@ -14,7 +14,7 @@
 
 This application combines **data science**, **machine learning**, and **premium UI design** to help users analyze and optimize their subscription spending. Built with a focus on clean architecture, performance, and user experience.
 
-**Demo:** Run locally with `python app.py` (see Getting Started)
+**Live Demo:** https://subscription-analyzer.onrender.com
 
 ---
 
