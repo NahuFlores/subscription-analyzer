@@ -94,7 +94,7 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 className={`
-                    fixed top-1/2 -translate-y-1/2 h-[calc(100vh-2rem)] 
+                    fixed top-1/2 -translate-y-1/2 h-[calc(100dvh-2rem)] 
                     z-50 
                     md:bg-transparent!
                     flex flex-col overflow-hidden

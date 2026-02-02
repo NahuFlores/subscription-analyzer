@@ -1,10 +1,9 @@
 """
 Subscription models - Base class and specialized subscription types
-Demonstrates OOP principles: Inheritance, Polymorphism, Abstraction
 """
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Optional
 import uuid
 import calendar
 
@@ -12,21 +11,50 @@ import calendar
 class Subscription(ABC):
     """
     Abstract base class for all subscription types
-    Demonstrates: Abstraction, Encapsulation
     """
     
     def __init__(self, user_id: str, name: str, cost: float, 
                  start_date: datetime, category: str = "Other",
                  subscription_id: Optional[str] = None,
                  is_active: bool = True, notes: str = ""):
+        """
+        Initialize subscription with comprehensive validation
+        
+        Raises:
+            TypeError: If arguments have incorrect types
+            ValueError: If arguments have invalid values
+        """
+        # Type Validation
+        if not isinstance(user_id, str):
+            raise TypeError(f"user_id must be str, got {type(user_id).__name__}")
+        if not isinstance(name, str):
+            raise TypeError(f"name must be str, got {type(name).__name__}")
+        if not isinstance(cost, (int, float)):
+            raise TypeError(f"cost must be numeric, got {type(cost).__name__}")
+        if not isinstance(start_date, datetime):
+            raise TypeError(f"start_date must be datetime, got {type(start_date).__name__}")
+        
+        # Value Validation
+        if not user_id or not user_id.strip():
+            raise ValueError("user_id cannot be empty")
+        if not name or not name.strip():
+            raise ValueError("name cannot be empty")
+        if len(name.strip()) > 100:
+            raise ValueError("name too long (max 100 characters)")
+        if cost < 0:
+            raise ValueError("cost cannot be negative")
+        if cost > 10000:  # Reasonable limit
+            raise ValueError("cost exceeds reasonable limit ($10,000)")
+        
+        # Sanitization & Assignment
         self._subscription_id = subscription_id or str(uuid.uuid4())
-        self._user_id = user_id
-        self._name = name
-        self._cost = self._validate_cost(cost)
+        self._user_id = user_id.strip()
+        self._name = name.strip()
+        self._cost = round(float(cost), 2)
         self._start_date = start_date
-        self._category = category
-        self._is_active = is_active
-        self._notes = notes
+        self._category = category.strip() if category else "Other"
+        self._is_active = bool(is_active)
+        self._notes = notes.strip() if notes else ""
         self._created_at = datetime.now()
         self._updated_at = datetime.now()
     
@@ -96,7 +124,7 @@ class Subscription(ABC):
         # This will be overridden by subclasses for accurate calculation
         return self._cost * 12
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert subscription to dictionary for Firebase storage"""
         return {
             'subscription_id': self._subscription_id,
@@ -225,7 +253,7 @@ class CustomSubscription(Subscription):
         cycles_per_year = 365 / self._custom_days
         return self._cost * cycles_per_year
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Override to include custom_days"""
         data = super().to_dict()
         data['custom_days'] = self._custom_days
@@ -236,7 +264,6 @@ class CustomSubscription(Subscription):
 class SubscriptionFactory:
     """
     Factory class to create appropriate subscription type
-    Demonstrates: Factory Design Pattern
     """
     
     @staticmethod
@@ -251,20 +278,22 @@ class SubscriptionFactory:
         Returns:
             Appropriate Subscription subclass instance
         """
-        if billing_cycle == 'monthly':
-            return MonthlySubscription(**kwargs)
-        elif billing_cycle == 'annual':
-            return AnnualSubscription(**kwargs)
-        elif billing_cycle == 'custom':
-            return CustomSubscription(**kwargs)
-        else:
-            raise ValueError(f"Unknown billing cycle: {billing_cycle}")
+        match billing_cycle:
+            case 'monthly':
+                return MonthlySubscription(**kwargs)
+            case 'annual':
+                return AnnualSubscription(**kwargs)
+            case 'custom':
+                return CustomSubscription(**kwargs)
+            case _:
+                raise ValueError(f"Unknown billing cycle: {billing_cycle}")
     
     @staticmethod
-    def from_dict(data: Dict) -> Subscription:
+    def from_dict(data: dict) -> Subscription:
         """Create subscription from dictionary"""
         billing_cycle = data.get('billing_cycle', 'monthly')
         
+        # Modern dict unpacking for known fields could be done, but kwargs is flexible
         kwargs = {
             'subscription_id': data.get('subscription_id'),
             'user_id': data['user_id'],
@@ -276,10 +305,15 @@ class SubscriptionFactory:
             'notes': data.get('notes', '')
         }
         
-        if billing_cycle == 'custom' or 'custom_days' in data:
-            kwargs['custom_days'] = data.get('custom_days', 30)
-            return CustomSubscription(**kwargs)
-        elif billing_cycle == 'annual':
-            return AnnualSubscription(**kwargs)
-        else:
-            return MonthlySubscription(**kwargs)
+        match billing_cycle:
+            case 'custom':
+                kwargs['custom_days'] = data.get('custom_days', 30)
+                return CustomSubscription(**kwargs)
+            case 'annual':
+                return AnnualSubscription(**kwargs)
+            case _:
+                # Check for custom_days in data even if cycle says monthly (fallback compatibility)
+                if 'custom_days' in data:
+                    kwargs['custom_days'] = data.get('custom_days')
+                    return CustomSubscription(**kwargs)
+                return MonthlySubscription(**kwargs)

@@ -7,7 +7,6 @@ from typing import List, Dict, Optional
 class Category:
     """
     Category class for organizing subscriptions
-    Includes auto-categorization based on keywords
     """
     
     # Predefined categories with keywords for auto-categorization

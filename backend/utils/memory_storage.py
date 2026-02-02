@@ -1,16 +1,21 @@
-"""
-In-memory storage for demo mode (when Firebase is unavailable)
-"""
+from threading import RLock
+import logging
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
+logger = logging.getLogger(__name__)
+
 class InMemoryStorage:
-    """Simple in-memory storage for demo purposes"""
+    """
+    Simple in-memory storage for development/fallback
+    Thread-safe implementation using RLock
+    """
     
     def __init__(self):
         self._users = {}
         self._subscriptions = {}
         self._alerts = {}
+        self._lock = RLock()
     
     # User operations
     def create_user(self, user_data: Dict) -> bool:
@@ -28,27 +33,46 @@ class InMemoryStorage:
     
     # Subscription operations
     def create_subscription(self, subscription_data: Dict) -> bool:
-        self._subscriptions[subscription_data['subscription_id']] = subscription_data
-        return True
-    
+        """Thread-safe create subscription"""
+        with self._lock:
+            try:
+                sub_id = subscription_data.get('subscription_id')
+                if not sub_id:
+                    return False
+                self._subscriptions[sub_id] = subscription_data.copy()
+                return True
+            except Exception as e:
+                logger.error(f"InMemory Error: {e}")
+                return False
+
     def get_subscription(self, subscription_id: str) -> Optional[Dict]:
-        return self._subscriptions.get(subscription_id)
-    
+        """Thread-safe get subscription"""
+        with self._lock:
+            return self._subscriptions.get(subscription_id, {}).copy() if subscription_id in self._subscriptions else None
+
     def get_user_subscriptions(self, user_id: str) -> List[Dict]:
-        return [sub for sub in self._subscriptions.values() 
-                if sub.get('user_id') == user_id]
-    
-    def update_subscription(self, subscription_id: str, subscription_data: Dict) -> bool:
-        if subscription_id in self._subscriptions:
-            self._subscriptions[subscription_id].update(subscription_data)
-            return True
-        return False
-    
+        """Thread-safe get user subscriptions"""
+        with self._lock:
+            return [
+                sub.copy() for sub in self._subscriptions.values() 
+                if sub.get('user_id') == user_id
+            ]
+
+    def update_subscription(self, subscription_id: str, data: Dict) -> bool:
+        """Thread-safe update subscription"""
+        with self._lock:
+            if subscription_id in self._subscriptions:
+                self._subscriptions[subscription_id].update(data)
+                return True
+            return False
+
     def delete_subscription(self, subscription_id: str) -> bool:
-        if subscription_id in self._subscriptions:
-            del self._subscriptions[subscription_id]
-            return True
-        return False
+        """Thread-safe delete subscription"""
+        with self._lock:
+            if subscription_id in self._subscriptions:
+                del self._subscriptions[subscription_id]
+                return True
+            return False
     
     # Alert operations
     def create_alert(self, alert_data: Dict) -> bool:

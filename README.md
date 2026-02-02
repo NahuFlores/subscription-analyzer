@@ -90,9 +90,10 @@ Subscription (Abstract Base)
 ```
 
 **Design Patterns:**
-- Factory Pattern for object creation
+- Factory Pattern for object creation (using **PEP 634** `match/case`)
 - Encapsulation with property decorators
 - Polymorphism for billing calculations
+- Modern Type Hinting (**PEP 585** generics)
 - Singleton pattern for database connections
 
 ### Project Structure

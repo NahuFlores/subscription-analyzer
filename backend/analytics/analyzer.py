@@ -1,15 +1,17 @@
 """
 Analytics Analyzer - Main data analysis engine using Pandas and NumPy
 """
+import logging
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from models import Subscription, User
 from config import AnalyticsConfig
 
+logger = logging.getLogger(__name__)
 
-def sanitize_for_json(obj):
+def sanitize_for_json(obj: Any) -> Any:
     """
     Replace NaN and Infinity with safe values for JSON serialization
     
@@ -42,22 +44,37 @@ class SubscriptionAnalyzer:
     
     def __init__(self, subscriptions: List[Subscription], user: User):
         """
-        Initialize analyzer with subscriptions and user data
+        Initialize analyzer with robust validation
         
         Args:
             subscriptions: List of Subscription objects
             user: User object
         
         Raises:
-            ValueError: If subscriptions is None
+            TypeError: If arguments have wrong types
+            ValueError: If arguments are invalid
         """
-        if subscriptions is None:
-            raise ValueError("Subscriptions list cannot be None")
+        self._validate_inputs(subscriptions, user)
         
         self.subscriptions = subscriptions
         self.user = user
         self.dataframe = self._create_dataframe()
-    
+
+    def _validate_inputs(self, subscriptions: List[Subscription], user: User) -> None:
+        """Validate constructor inputs"""
+        if not isinstance(subscriptions, list):
+            raise TypeError(f"subscriptions must be a list, got {type(subscriptions)}")
+        
+        if user is None:
+            raise ValueError("User cannot be None")
+
+        if not isinstance(user, User):
+            raise TypeError(f"user must be User instance, got {type(user)}")
+            
+        for idx, sub in enumerate(subscriptions):
+            if not isinstance(sub, Subscription):
+                raise TypeError(f"subscriptions[{idx}] must be Subscription, got {type(sub)}")
+
     def _create_dataframe(self) -> pd.DataFrame:
         """
         Convert subscriptions list to Pandas DataFrame for analysis
@@ -91,7 +108,19 @@ class SubscriptionAnalyzer:
             dataframe['is_active'] = dataframe['is_active'].astype(bool)
             
         return dataframe
-    
+
+    def _get_active_subscriptions(self) -> pd.DataFrame:
+        """
+        Get filtered DataFrame with only active subscriptions
+        
+        Returns:
+            DataFrame containing only active subscriptions
+        """
+        if self.dataframe.empty:
+            return pd.DataFrame()
+        
+        return self.dataframe[self.dataframe['is_active']].copy()
+
     def get_total_monthly_cost(self) -> float:
         """
         Calculate total monthly cost across all active subscriptions
@@ -99,16 +128,29 @@ class SubscriptionAnalyzer:
         Returns:
             Total monthly cost (0.0 if no active subscriptions)
         """
-        if self.dataframe.empty:
-            return 0.0
-        
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        
-        if active_subscriptions.empty:
-            return 0.0
+        try:
+            active_df = self._get_active_subscriptions()
+            
+            if active_df.empty:
+                return 0.0
 
-        total_annual_cost = active_subscriptions['annual_cost'].sum()
-        return round(total_annual_cost / 12, 2)
+            # Handle potentially corrupted data
+            annual_costs = active_df['annual_cost'].fillna(0.0)
+            if (annual_costs < 0).any():
+                logger.warning(f"Negative costs detected for user {self.user.user_id}, clipping to 0")
+                annual_costs = annual_costs.clip(lower=0.0)
+
+            total_annual_cost = annual_costs.sum()
+            
+            if np.isnan(total_annual_cost) or np.isinf(total_annual_cost):
+                logger.error(f"Invalid total annual cost for user {self.user.user_id}")
+                return 0.0
+                
+            return round(total_annual_cost / 12, 2)
+            
+        except Exception as e:
+            logger.error(f"Error calculating monthly cost: {e}", exc_info=True)
+            return 0.0
     
     def get_total_annual_cost(self) -> float:
         """
@@ -117,11 +159,16 @@ class SubscriptionAnalyzer:
         Returns:
             Total annual cost
         """
-        if self.dataframe.empty:
+        try:
+            active_df = self._get_active_subscriptions()
+            if active_df.empty:
+                return 0.0
+            
+            annual_costs = active_df['annual_cost'].fillna(0.0)
+            return round(annual_costs.sum(), 2)
+        except Exception as e:
+            logger.error(f"Error calculating annual cost: {e}", exc_info=True)
             return 0.0
-        
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        return round(active_subscriptions['annual_cost'].sum(), 2)
     
     def get_cost_by_category(self) -> Dict[str, float]:
         """
@@ -130,15 +177,18 @@ class SubscriptionAnalyzer:
         Returns:
             Dictionary mapping category name to monthly cost
         """
-        if self.dataframe.empty:
+        try:
+            active_df = self._get_active_subscriptions()
+            if active_df.empty:
+                return {}
+            
+            category_annual_costs = active_df.groupby('category')['annual_cost'].sum()
+            category_monthly_costs = (category_annual_costs / 12).round(2)
+            
+            return category_monthly_costs.to_dict()
+        except Exception as e:
+            logger.error(f"Error calculating cost by category: {e}", exc_info=True)
             return {}
-        
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        
-        category_annual_costs = active_subscriptions.groupby('category')['annual_cost'].sum()
-        category_monthly_costs = (category_annual_costs / 12).round(2)
-        
-        return category_monthly_costs.to_dict()
     
     def get_cost_by_billing_cycle(self) -> Dict[str, float]:
         """
@@ -147,14 +197,18 @@ class SubscriptionAnalyzer:
         Returns:
             Dictionary mapping billing cycle to monthly cost
         """
-        if self.dataframe.empty:
+        try:
+            active_df = self._get_active_subscriptions()
+            if active_df.empty:
+                return {}
+            
+            cycle_annual_costs = active_df.groupby('billing_cycle')['annual_cost'].sum()
+            cycle_monthly_costs = (cycle_annual_costs / 12).round(2)
+            
+            return cycle_monthly_costs.to_dict()
+        except Exception as e:
+            logger.error(f"Error calculating cost by billing cycle: {e}", exc_info=True)
             return {}
-        
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        cycle_annual_costs = active_subscriptions.groupby('billing_cycle')['annual_cost'].sum()
-        cycle_monthly_costs = (cycle_annual_costs / 12).round(2)
-        
-        return cycle_monthly_costs.to_dict()
     
     def get_upcoming_payments(self, days: int = None) -> List[Dict]:
         """
@@ -169,34 +223,38 @@ class SubscriptionAnalyzer:
         if days is None:
             days = AnalyticsConfig.DEFAULT_UPCOMING_DAYS
             
-        if self.dataframe.empty:
+        active_df = self._get_active_subscriptions()
+        if active_df.empty:
             return []
         
         today = datetime.now()
         future_date = today + timedelta(days=days)
         
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True].copy()
-        
-        upcoming_subscriptions = active_subscriptions[
-            (active_subscriptions['next_billing'] > today) & 
-            (active_subscriptions['next_billing'] <= future_date)
-        ]
-        
-        upcoming_subscriptions = upcoming_subscriptions.sort_values('next_billing')
-        
-        result = []
-        for _, row in upcoming_subscriptions.iterrows():
-            days_until_payment = (row['next_billing'] - today).days
-            result.append({
-                'name': row['name'],
-                'cost': row['cost'],
-                'billing_date': row['next_billing'].strftime('%Y-%m-%d'),
-                'days_until': days_until_payment,
-                'category': row['category']
-            })
-        
-        return result
-    
+        # Ensure next_billing is datetime
+        try:
+            upcoming_subscriptions = active_df[
+                (active_df['next_billing'] > today) & 
+                (active_df['next_billing'] <= future_date)
+            ].copy()
+            
+            upcoming_subscriptions = upcoming_subscriptions.sort_values('next_billing')
+            
+            result = []
+            for _, row in upcoming_subscriptions.iterrows():
+                days_until_payment = (row['next_billing'] - today).days
+                result.append({
+                    'name': row['name'],
+                    'cost': row['cost'],
+                    'billing_date': row['next_billing'].strftime('%Y-%m-%d'),
+                    'days_until': days_until_payment,
+                    'category': row['category']
+                })
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error getting upcoming payments: {e}", exc_info=True)
+            return []
+
     def get_statistics(self) -> Dict:
         """
         Calculate comprehensive subscription statistics
@@ -204,8 +262,60 @@ class SubscriptionAnalyzer:
         Returns:
             Dictionary containing various statistical metrics
         """
-        if self.dataframe.empty:
-            return {
+        try:
+            if self.dataframe.empty:
+                return self._get_empty_statistics()
+            
+            active_df = self._get_active_subscriptions()
+            
+            statistics = {
+                'total_subscriptions': len(self.dataframe),
+                'active_subscriptions': len(active_df),
+                'inactive_subscriptions': len(self.dataframe) - len(active_df),
+                'total_monthly_cost': self.get_total_monthly_cost(),
+                'total_annual_cost': self.get_total_annual_cost(),
+                'average_subscription_cost': round(active_df['cost'].mean(), 2) if not active_df.empty else 0.0,
+                'median_subscription_cost': round(active_df['cost'].median(), 2) if not active_df.empty else 0.0,
+                'std_subscription_cost': round(active_df['cost'].std(), 2) if not active_df.empty else 0.0
+            }
+            
+            if not active_df.empty:
+                category_costs = self.get_cost_by_category()
+                if category_costs:
+                    most_expensive_category = max(category_costs, key=category_costs.get)
+                    statistics['most_expensive_category'] = {
+                        'name': most_expensive_category,
+                        'monthly_cost': category_costs[most_expensive_category]
+                    }
+                
+                cheapest_index = active_df['cost'].idxmin()
+                expensive_index = active_df['cost'].idxmax()
+                
+                statistics['cheapest_subscription'] = {
+                    'name': active_df.loc[cheapest_index, 'name'],
+                    'cost': active_df.loc[cheapest_index, 'cost']
+                }
+                
+                statistics['most_expensive_subscription'] = {
+                    'name': active_df.loc[expensive_index, 'name'],
+                    'cost': active_df.loc[expensive_index, 'cost']
+                }
+            else:
+                 # Fill explicitly if empty active subs but rows exist
+                 statistics.update({
+                    'most_expensive_category': None,
+                    'cheapest_subscription': None,
+                    'most_expensive_subscription': None
+                 })
+            
+            return statistics
+        except Exception as e:
+             logger.error(f"Error getting statistics: {e}", exc_info=True)
+             return self._get_empty_statistics()
+
+    def _get_empty_statistics(self) -> Dict:
+        """Return default statistics for empty/error state"""
+        return {
                 'total_subscriptions': 0,
                 'active_subscriptions': 0,
                 'inactive_subscriptions': 0,
@@ -216,44 +326,7 @@ class SubscriptionAnalyzer:
                 'cheapest_subscription': None,
                 'most_expensive_subscription': None
             }
-        
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        
-        statistics = {
-            'total_subscriptions': len(self.dataframe),
-            'active_subscriptions': len(active_subscriptions),
-            'inactive_subscriptions': len(self.dataframe) - len(active_subscriptions),
-            'total_monthly_cost': self.get_total_monthly_cost(),
-            'total_annual_cost': self.get_total_annual_cost(),
-            'average_subscription_cost': round(active_subscriptions['cost'].mean(), 2) if not active_subscriptions.empty else 0.0,
-            'median_subscription_cost': round(active_subscriptions['cost'].median(), 2) if not active_subscriptions.empty else 0.0,
-            'std_subscription_cost': round(active_subscriptions['cost'].std(), 2) if not active_subscriptions.empty else 0.0
-        }
-        
-        if not active_subscriptions.empty:
-            category_costs = self.get_cost_by_category()
-            if category_costs:
-                most_expensive_category = max(category_costs, key=category_costs.get)
-                statistics['most_expensive_category'] = {
-                    'name': most_expensive_category,
-                    'monthly_cost': category_costs[most_expensive_category]
-                }
-            
-            cheapest_index = active_subscriptions['cost'].idxmin()
-            expensive_index = active_subscriptions['cost'].idxmax()
-            
-            statistics['cheapest_subscription'] = {
-                'name': active_subscriptions.loc[cheapest_index, 'name'],
-                'cost': active_subscriptions.loc[cheapest_index, 'cost']
-            }
-            
-            statistics['most_expensive_subscription'] = {
-                'name': active_subscriptions.loc[expensive_index, 'name'],
-                'cost': active_subscriptions.loc[expensive_index, 'cost']
-            }
-        
-        return statistics
-    
+
     def detect_cost_anomalies(self, threshold: float = None) -> List[Dict]:
         """
         Detect subscriptions with unusually high costs using statistical methods
@@ -270,33 +343,41 @@ class SubscriptionAnalyzer:
         if self.dataframe.empty or len(self.dataframe) < AnalyticsConfig.ML_MIN_DATA_POINTS:
             return []
         
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        
-        if active_subscriptions.empty or len(active_subscriptions) < AnalyticsConfig.ML_MIN_DATA_POINTS:
-            return []
-        
-        costs = active_subscriptions['cost'].values
-        mean_cost = np.mean(costs)
-        std_cost = np.std(costs)
-        
-        upper_bound = mean_cost + (threshold * std_cost)
-        anomalous_subscriptions = active_subscriptions[active_subscriptions['cost'] > upper_bound]
-        
-        result = []
-        for _, row in anomalous_subscriptions.iterrows():
-            z_score = (row['cost'] - mean_cost) / std_cost if std_cost > 0 else 0
-            deviation_percentage = ((row['cost'] - mean_cost) / mean_cost) * 100
+        try:
+            active_df = self._get_active_subscriptions()
             
-            result.append({
-                'name': row['name'],
-                'cost': row['cost'],
-                'category': row['category'],
-                'z_score': round(z_score, 2),
-                'deviation_percentage': round(deviation_percentage, 1)
-            })
-        
-        return result
-    
+            if active_df.empty or len(active_df) < AnalyticsConfig.ML_MIN_DATA_POINTS:
+                return []
+            
+            costs = active_df['cost'].values
+            mean_cost = np.mean(costs)
+            std_cost = np.std(costs)
+            
+            if std_cost == 0:
+                return []
+
+            upper_bound = mean_cost + (threshold * std_cost)
+            anomalous_subscriptions = active_df[active_df['cost'] > upper_bound]
+            
+            result = []
+            for _, row in anomalous_subscriptions.iterrows():
+                cost_deviation = row['cost'] - mean_cost
+                z_score = cost_deviation / std_cost
+                deviation_percentage = (cost_deviation / mean_cost) * 100
+                
+                result.append({
+                    'name': row['name'],
+                    'cost': row['cost'],
+                    'category': row['category'],
+                    'z_score': round(z_score, 2),
+                    'deviation_percentage': round(deviation_percentage, 1)
+                })
+            
+            return result
+        except Exception as e:
+            logger.error(f"Error detecting cost anomalies: {e}", exc_info=True)
+            return []
+
     def get_category_distribution(self) -> Dict[str, int]:
         """
         Get count of active subscriptions per category
@@ -304,11 +385,11 @@ class SubscriptionAnalyzer:
         Returns:
             Dictionary mapping category to subscription count
         """
-        if self.dataframe.empty:
+        active_df = self._get_active_subscriptions()
+        if active_df.empty:
             return {}
         
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        return active_subscriptions['category'].value_counts().to_dict()
+        return active_df['category'].value_counts().to_dict()
     
     def _calculate_annual_billing_savings(self) -> List[Dict]:
         """
@@ -318,10 +399,11 @@ class SubscriptionAnalyzer:
             List of savings opportunities
         """
         opportunities = []
-        monthly_subscriptions = self.dataframe[
-            (self.dataframe['is_active'] == True) & 
-            (self.dataframe['billing_cycle'] == 'monthly')
-        ]
+        active_df = self._get_active_subscriptions()
+        if active_df.empty:
+            return []
+
+        monthly_subscriptions = active_df[active_df['billing_cycle'] == 'monthly']
         
         for _, row in monthly_subscriptions.iterrows():
             current_annual_cost = row['cost'] * 12
@@ -347,12 +429,15 @@ class SubscriptionAnalyzer:
             List of consolidation opportunities
         """
         opportunities = []
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
-        category_counts = active_subscriptions['category'].value_counts()
+        active_df = self._get_active_subscriptions()
+        if active_df.empty:
+            return []
+
+        category_counts = active_df['category'].value_counts()
         
         for category, count in category_counts.items():
             if count >= 2 and category != 'Other':
-                category_subscriptions = active_subscriptions[active_subscriptions['category'] == category]
+                category_subscriptions = active_df[active_df['category'] == category]
                 total_category_cost = category_subscriptions['cost'].sum()
                 estimated_savings = total_category_cost * AnalyticsConfig.DUPLICATE_CATEGORY_SAVINGS_RATE
                 
@@ -375,9 +460,11 @@ class SubscriptionAnalyzer:
             List of high-cost optimization opportunities
         """
         opportunities = []
-        active_subscriptions = self.dataframe[self.dataframe['is_active'] == True]
+        active_df = self._get_active_subscriptions()
+        if active_df.empty:
+            return []
         
-        for _, row in active_subscriptions.iterrows():
+        for _, row in active_df.iterrows():
             if row['cost'] > AnalyticsConfig.HIGH_COST_THRESHOLD:
                 potential_savings = row['cost'] * AnalyticsConfig.HIGH_COST_SAVINGS_RATE
                 
@@ -403,22 +490,26 @@ class SubscriptionAnalyzer:
         
         all_opportunities = []
         
-        # Collect all types of savings opportunities
-        all_opportunities.extend(self._calculate_annual_billing_savings())
-        all_opportunities.extend(self._calculate_duplicate_category_savings())
-        all_opportunities.extend(self._calculate_high_cost_savings())
-        
-        # Calculate total savings
-        total_monthly_savings = sum(
-            opportunity['potential_monthly_savings'] 
-            for opportunity in all_opportunities
-        )
-        
-        return {
-            'total_potential_monthly_savings': round(total_monthly_savings, 2),
-            'total_potential_annual_savings': round(total_monthly_savings * 12, 2),
-            'opportunities': all_opportunities
-        }
+        try:
+            # Collect all types of savings opportunities
+            all_opportunities.extend(self._calculate_annual_billing_savings())
+            all_opportunities.extend(self._calculate_duplicate_category_savings())
+            all_opportunities.extend(self._calculate_high_cost_savings())
+            
+            # Calculate total savings
+            total_monthly_savings = sum(
+                opportunity['potential_monthly_savings'] 
+                for opportunity in all_opportunities
+            )
+            
+            return {
+                'total_potential_monthly_savings': round(total_monthly_savings, 2),
+                'total_potential_annual_savings': round(total_monthly_savings * 12, 2),
+                'opportunities': all_opportunities
+            }
+        except Exception as e:
+             logger.error(f"Error calculating potential savings: {e}", exc_info=True)
+             return {'total_potential_savings': 0.0, 'opportunities': []}
     
     def export_to_dict(self) -> Dict:
         """

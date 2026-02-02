@@ -5,8 +5,26 @@ from flask import Blueprint, request, jsonify
 from models import SubscriptionFactory, User
 from analytics import SubscriptionAnalyzer, CostPredictor
 from utils import FirebaseHelper
+import logging
 
+logger = logging.getLogger(__name__)
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/api/analytics')
+
+
+def _get_user_objects(user_id: str) -> tuple[list, User]:
+    """
+    Helper to fetch and convert subscriptions and user data
+    Returns: (subscriptions_list, user_object)
+    """
+    # Get user subscriptions
+    subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
+    subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+    
+    # Get user data
+    user_data = FirebaseHelper.get_user(user_id)
+    user = User.from_dict(user_data) if user_data else User(user_id, 'user@example.com', 'User')
+    
+    return subscriptions, user
 
 
 @analytics_bp.route('/summary', methods=['GET'])
@@ -18,35 +36,25 @@ def get_summary():
         return jsonify({'error': 'user_id is required'}), 400
     
     try:
-        # Get user subscriptions
-        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
+        subscriptions, user = _get_user_objects(user_id)
         
-        if not subscriptions_data:
+        if not subscriptions:
             return jsonify({
                 'success': True,
                 'message': 'No subscriptions found',
                 'analytics': {}
             }), 200
         
-        # Convert to subscription objects
-        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
-        
-        # Get user data
-        user_data = FirebaseHelper.get_user(user_id)
-        user = User.from_dict(user_data) if user_data else User(user_id, 'user@example.com', 'User')
-        
         # Create analyzer
         analyzer = SubscriptionAnalyzer(subscriptions, user)
         
-        # Get all analytics
-        analytics = analyzer.export_to_dict()
-        
         return jsonify({
             'success': True,
-            'analytics': analytics
+            'analytics': analyzer.export_to_dict()
         }), 200
         
     except Exception as e:
+        logger.error(f"Error in get_summary: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -60,9 +68,7 @@ def get_predictions():
         return jsonify({'error': 'user_id is required'}), 400
     
     try:
-        # Get subscriptions
-        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
-        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+        subscriptions, _ = _get_user_objects(user_id)
         
         if not subscriptions:
             return jsonify({
@@ -74,41 +80,28 @@ def get_predictions():
         # Create predictor
         predictor = CostPredictor(subscriptions)
         
-        # Get predictions
-        predictions = predictor.predict_future_costs(months)
-        
-        # Get clustering
-        clusters = predictor.cluster_subscriptions()
-        
-        # Get efficiency metrics
-        efficiency = predictor.calculate_cost_efficiency()
-        
         return jsonify({
             'success': True,
-            'predictions': predictions,
-            'clusters': clusters,
-            'efficiency': efficiency
+            'predictions': predictor.predict_future_costs(months),
+            'clusters': predictor.cluster_subscriptions(),
+            'efficiency': predictor.calculate_cost_efficiency()
         }), 200
         
     except Exception as e:
+        logger.error(f"Error in get_predictions: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
 @analytics_bp.route('/charts', methods=['GET'])
 def get_charts():
-    """
-    Get chart data for visualizations (Recharts format)
-    Frontend uses Recharts, so we return raw data instead of Plotly JSON
-    """
+    """Get chart data for visualizations (Recharts format)"""
     user_id = request.args.get('user_id')
     
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
     
     try:
-        # Get subscriptions
-        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
-        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+        subscriptions, user = _get_user_objects(user_id)
         
         if not subscriptions:
             return jsonify({
@@ -117,21 +110,13 @@ def get_charts():
                 'charts': {}
             }), 200
         
-        # Get user
-        user_data = FirebaseHelper.get_user(user_id)
-        user = User.from_dict(user_data) if user_data else User(user_id, 'user@example.com', 'User')
-        
-        # Create analyzer
+        # Compute analytics and predictions
         analyzer = SubscriptionAnalyzer(subscriptions, user)
-        
-        # Get analytics data
         analytics_data = analyzer.export_to_dict()
         
-        # Get predictions for trend chart
         predictor = CostPredictor(subscriptions)
         predictions = predictor.predict_future_costs(6)
         
-        # Format data for Recharts (frontend will handle visualization)
         charts_data = {
             'category_costs': analytics_data.get('cost_by_category', {}),
             'billing_cycle_costs': analytics_data.get('cost_by_billing_cycle', {}),
@@ -146,6 +131,7 @@ def get_charts():
         }), 200
         
     except Exception as e:
+        logger.error(f"Error in get_charts: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
@@ -158,9 +144,7 @@ def get_insights():
         return jsonify({'error': 'user_id is required'}), 400
     
     try:
-        # Get subscriptions
-        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
-        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+        subscriptions, user = _get_user_objects(user_id)
         
         if not subscriptions:
             return jsonify({
@@ -169,11 +153,6 @@ def get_insights():
                 'insights': []
             }), 200
         
-        # Get user
-        user_data = FirebaseHelper.get_user(user_id)
-        user = User.from_dict(user_data) if user_data else User(user_id, 'user@example.com', 'User')
-        
-        # Create analyzer and predictor
         analyzer = SubscriptionAnalyzer(subscriptions, user)
         predictor = CostPredictor(subscriptions)
         
@@ -181,8 +160,7 @@ def get_insights():
         insights = []
         
         # 1. Cost anomalies
-        anomalies = analyzer.detect_cost_anomalies()
-        if anomalies:
+        if anomalies := analyzer.detect_cost_anomalies():
             insights.append({
                 'type': 'warning',
                 'title': 'Unusually High Costs Detected',
@@ -201,8 +179,7 @@ def get_insights():
             })
         
         # 3. Unused subscriptions
-        unused = predictor.detect_unused_subscriptions()
-        if unused:
+        if unused := predictor.detect_unused_subscriptions():
             insights.append({
                 'type': 'info',
                 'title': 'Review These Subscriptions',
@@ -211,8 +188,7 @@ def get_insights():
             })
         
         # 4. Upcoming payments
-        upcoming = analyzer.get_upcoming_payments(7)
-        if upcoming:
+        if upcoming := analyzer.get_upcoming_payments(7):
             total_upcoming = sum(p['cost'] for p in upcoming)
             insights.append({
                 'type': 'info',
@@ -228,17 +204,15 @@ def get_insights():
         }), 200
         
     except Exception as e:
+        logger.error(f"Error in get_insights: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 
 @analytics_bp.route('/report', methods=['GET'])
 def generate_report():
-    """
-    Generate static analysis report with matplotlib/seaborn visualizations
-    Used for academic demonstration and PDF exports
-    """
+    """Generate static analysis report with visualizations"""
     user_id = request.args.get('user_id')
-    report_type = request.args.get('type', 'all')  # 'all', 'category', 'cost', 'stats', 'correlation'
+    report_type = request.args.get('type', 'all')
     
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
@@ -246,9 +220,7 @@ def generate_report():
     try:
         from analytics import ReportGenerator
         
-        # Get subscriptions
-        subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
-        subscriptions = [SubscriptionFactory.from_dict(data) for data in subscriptions_data]
+        subscriptions, _ = _get_user_objects(user_id)
         
         if not subscriptions:
             return jsonify({
@@ -257,29 +229,27 @@ def generate_report():
                 'plots': {}
             }), 200
         
-        # Create report generator
         report_gen = ReportGenerator(subscriptions)
-        
-        # Generate requested plots (as base64 images)
         plots = {}
         
-        if report_type == 'all' or report_type == 'category':
+        if report_type in ['all', 'category']:
             plots['category_distribution'] = report_gen.create_category_distribution_plot()
         
-        if report_type == 'all' or report_type == 'cost':
+        if report_type in ['all', 'cost']:
             plots['cost_analysis'] = report_gen.create_cost_analysis_plot()
         
-        if report_type == 'all' or report_type == 'stats':
+        if report_type in ['all', 'stats']:
             plots['statistical_summary'] = report_gen.create_statistical_summary_plot()
         
-        if report_type == 'all' or report_type == 'correlation':
+        if report_type in ['all', 'correlation']:
             plots['correlation_heatmap'] = report_gen.create_correlation_heatmap()
         
         return jsonify({
             'success': True,
             'plots': plots,
-            'message': f'Generated {len(plots)} visualization(s) using matplotlib/seaborn'
+            'message': f'Generated {len(plots)} visualization(s)'
         }), 200
         
     except Exception as e:
+        logger.error(f"Error in generate_report: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500

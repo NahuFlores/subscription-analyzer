@@ -1,253 +1,232 @@
 """
-Report Generator - Create static visualizations and PDF reports using Matplotlib and Seaborn
-This module demonstrates Data Science visualization skills for academic/portfolio purposes
-
-NOTE: Heavy libraries (matplotlib, seaborn, pandas, numpy) are lazy-loaded inside methods
-to reduce memory footprint when reports are not being generated.
+Report Generator - Create static visualizations and PDF reports.
 """
-from typing import List, Dict, Optional
-from datetime import datetime
 import io
 import base64
+import logging
+from typing import List, Dict, Optional, Tuple, Any
+from datetime import datetime
 from models import Subscription
 
+logger = logging.getLogger(__name__)
 
 class ReportGenerator:
     """
     Generate static analysis reports with matplotlib and seaborn visualizations.
-    Used for PDF exports, offline analysis, and demonstrating Data Science skills.
     """
     
     def __init__(self, subscriptions: List[Subscription]):
-        """
-        Initialize report generator with subscription data
-        
-        Args:
-            subscriptions: List of Subscription objects to analyze
-        """
+        if subscriptions is None:
+             raise ValueError("Subscriptions cannot be None")
+             
         self.subscriptions = subscriptions
-        self._setup_style()
+        # Modules placeholder for lazy loading
+        self._plt = None
+        self._sns = None
+        self._pd = None
+        self._np = None
+    
+    def _ensure_plotting_libs(self):
+        """Lazy load heavy plotting libraries (matplotlib, seaborn, pandas)"""
+        if self._plt is None:
+            try:
+                import matplotlib
+                matplotlib.use('Agg') # Non-interactive backend
+                import matplotlib.pyplot as plt
+                import seaborn as sns
+                import pandas as pd
+                import numpy as np
+                
+                self._plt = plt
+                self._sns = sns
+                self._pd = pd
+                self._np = np
+                
+                self._setup_style()
+                logger.info("Plotting libraries loaded successfully")
+            except ImportError as e:
+                logger.critical(f"Failed to load plotting libraries: {e}")
+                raise
     
     def _setup_style(self):
-        """Configure matplotlib and seaborn styling for professional reports"""
-        # Lazy load heavy libraries only when needed
-        import matplotlib
-        matplotlib.use('Agg')  # Non-interactive backend for server use
-        import matplotlib.pyplot as plt
-        import seaborn as sns
+        """Configure matplotlib and seaborn styling"""
+        self._sns.set_style("darkgrid")
+        self._sns.set_palette("husl")
         
-        # Set seaborn style for better aesthetics
-        sns.set_style("darkgrid")
-        sns.set_palette("husl")
-        
-        # Configure matplotlib defaults
-        plt.rcParams['figure.figsize'] = (10, 6)
-        plt.rcParams['figure.dpi'] = 100
-        plt.rcParams['savefig.dpi'] = 300
-        plt.rcParams['savefig.bbox'] = 'tight'
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['axes.titlesize'] = 14
-        plt.rcParams['axes.labelsize'] = 12
-    
-    def create_category_distribution_plot(self, save_path: Optional[str] = None) -> str:
-        """
-        Create a bar plot showing subscription distribution by category
-        
-        Args:
-            save_path: Optional path to save the figure
-        
-        Returns:
-            Base64 encoded image string or file path
-        """
-        if not self.subscriptions:
-            return ""
-        
-        # Lazy load libraries
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        import pandas as pd
-        
-        # Prepare data
-        categories = [sub.category for sub in self.subscriptions if sub.is_active]
-        category_counts = pd.Series(categories).value_counts()
-        
-        # Create figure
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        # Create bar plot with seaborn
-        sns.barplot(
-            x=category_counts.values,
-            y=category_counts.index,
-            palette="viridis",
-            ax=ax
-        )
-        
-        ax.set_xlabel('Number of Subscriptions', fontweight='bold')
-        ax.set_ylabel('Category', fontweight='bold')
-        ax.set_title('Subscription Distribution by Category', fontweight='bold', fontsize=16)
-        
-        # Add value labels on bars
-        for i, v in enumerate(category_counts.values):
-            ax.text(v + 0.1, i, str(v), va='center')
-        
-        plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path)
-            plt.close()
-            return save_path
-        else:
-            return self._fig_to_base64(fig)
-    
-    def create_cost_analysis_plot(self, save_path: Optional[str] = None) -> str:
-        """
-        Create a comprehensive cost analysis visualization with multiple subplots
-        
-        Args:
-            save_path: Optional path to save the figure
-        
-        Returns:
-            Base64 encoded image string or file path
-        """
-        if not self.subscriptions:
-            return ""
-        
-        # Lazy load libraries
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        import pandas as pd
-        import numpy as np
-        
-        # Prepare data
-        active_subs = [sub for sub in self.subscriptions if sub.is_active]
-        costs = [sub.cost for sub in active_subs]
-        categories = [sub.category for sub in active_subs]
-        
-        df = pd.DataFrame({
-            'cost': costs,
-            'category': categories
-        })
-        
-        # Create figure with subplots
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-        fig.suptitle('Comprehensive Cost Analysis', fontsize=18, fontweight='bold')
-        
-        # 1. Cost Distribution Histogram
-        axes[0, 0].hist(costs, bins=15, color='skyblue', edgecolor='black', alpha=0.7)
-        axes[0, 0].set_xlabel('Monthly Cost ($)')
-        axes[0, 0].set_ylabel('Frequency')
-        axes[0, 0].set_title('Cost Distribution')
-        axes[0, 0].axvline(np.mean(costs), color='red', linestyle='--', label=f'Mean: ${np.mean(costs):.2f}')
-        axes[0, 0].legend()
-        
-        # 2. Box Plot by Category
-        sns.boxplot(data=df, y='category', x='cost', palette='Set2', ax=axes[0, 1])
-        axes[0, 1].set_xlabel('Monthly Cost ($)')
-        axes[0, 1].set_ylabel('Category')
-        axes[0, 1].set_title('Cost Distribution by Category')
-        
-        # 3. Category Cost Pie Chart
-        category_costs = df.groupby('category')['cost'].sum()
-        axes[1, 0].pie(
-            category_costs.values,
-            labels=category_costs.index,
-            autopct='%1.1f%%',
-            startangle=90,
-            colors=sns.color_palette('pastel')
-        )
-        axes[1, 0].set_title('Cost Share by Category')
-        
-        # 4. Violin Plot
-        sns.violinplot(data=df, y='category', x='cost', palette='muted', ax=axes[1, 1])
-        axes[1, 1].set_xlabel('Monthly Cost ($)')
-        axes[1, 1].set_ylabel('Category')
-        axes[1, 1].set_title('Cost Density by Category')
-        
-        plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path)
-            plt.close()
-            return save_path
-        else:
-            return self._fig_to_base64(fig)
-    
-    def create_statistical_summary_plot(self, save_path: Optional[str] = None) -> str:
-        """
-        Create a statistical summary visualization with key metrics
-        
-        Args:
-            save_path: Optional path to save the figure
-        
-        Returns:
-            Base64 encoded image string or file path
-        """
-        if not self.subscriptions:
-            return ""
-        
-        # Lazy load libraries
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        import numpy as np
-        
-        active_subs = [sub for sub in self.subscriptions if sub.is_active]
-        costs = np.array([sub.cost for sub in active_subs])
-        
-        # Calculate statistics
-        stats = {
-            'Mean': np.mean(costs),
-            'Median': np.median(costs),
-            'Std Dev': np.std(costs),
-            'Min': np.min(costs),
-            'Max': np.max(costs),
-            'Total': np.sum(costs)
+        rc_params = {
+            'figure.figsize': (10, 6),
+            'figure.dpi': 100,
+            'savefig.dpi': 300,
+            'savefig.bbox': 'tight',
+            'font.size': 10,
+            'axes.titlesize': 14,
+            'axes.labelsize': 12
         }
-        
-        # Create figure
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        # Create horizontal bar chart
-        colors = sns.color_palette('coolwarm', len(stats))
-        bars = ax.barh(list(stats.keys()), list(stats.values()), color=colors)
-        
-        ax.set_xlabel('Value ($)', fontweight='bold')
-        ax.set_title('Statistical Summary of Subscription Costs', fontweight='bold', fontsize=16)
-        
-        # Add value labels
-        for i, (bar, value) in enumerate(zip(bars, stats.values())):
-            ax.text(value + max(stats.values()) * 0.02, i, f'${value:.2f}', va='center')
-        
-        plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path)
-            plt.close()
-            return save_path
-        else:
-            return self._fig_to_base64(fig)
-    
-    def create_correlation_heatmap(self, save_path: Optional[str] = None) -> str:
-        """
-        Create a correlation heatmap for numerical features
-        
-        Args:
-            save_path: Optional path to save the figure
-        
-        Returns:
-            Base64 encoded image string or file path (empty string if insufficient data)
-        """
-        # Need at least 3 active subscriptions for meaningful correlations
-        active_subs = [sub for sub in self.subscriptions if sub.is_active]
-        if len(active_subs) < 3:
-            return ""
-        
+        self._plt.rcParams.update(rc_params)
+
+    def _get_active_subscriptions(self) -> List[Subscription]:
+        """Helper to get only active subscriptions (DRY)"""
+        return [sub for sub in self.subscriptions if sub.is_active]
+
+    def _fig_to_base64(self, fig) -> str:
+        """Convert matplotlib figure to base64 string safely"""
         try:
-            # Lazy load libraries
-            import matplotlib.pyplot as plt
-            import seaborn as sns
-            import pandas as pd
+            buffer = io.BytesIO()
+            fig.savefig(buffer, format='png', bbox_inches='tight')
+            buffer.seek(0)
+            image_base64 = base64.b64encode(buffer.read()).decode()
+            self._plt.close(fig)
+            return f"data:image/png;base64,{image_base64}"
+        except Exception as e:
+            logger.error(f"Error converting figure to base64: {e}")
+            if fig:
+                self._plt.close(fig)
+            return ""
+
+    def create_category_distribution_plot(self, save_path: Optional[str] = None) -> str:
+        """Create a bar plot showing subscription distribution by category"""
+        try:
+            self._ensure_plotting_libs()
             
-            # Prepare data
+            active_subs = self._get_active_subscriptions()
+            if not active_subs:
+                return ""
+            
+            categories = [sub.category for sub in active_subs]
+            category_counts = self._pd.Series(categories).value_counts()
+            
+            fig, ax = self._plt.subplots(figsize=(10, 6))
+            
+            self._sns.barplot(
+                x=category_counts.values,
+                y=category_counts.index,
+                palette="viridis",
+                ax=ax
+            )
+            
+            ax.set_xlabel('Number of Subscriptions', fontweight='bold')
+            ax.set_ylabel('Category', fontweight='bold')
+            ax.set_title('Subscription Distribution by Category', fontweight='bold', fontsize=16)
+            
+            for i, v in enumerate(category_counts.values):
+                ax.text(v + 0.1, i, str(v), va='center')
+            
+            self._plt.tight_layout()
+            
+            if save_path:
+                self._plt.savefig(save_path)
+                self._plt.close()
+                return save_path
+            
+            return self._fig_to_base64(fig)
+            
+        except Exception as e:
+            logger.error(f"Error generating category plot: {e}", exc_info=True)
+            return ""
+
+    def create_cost_analysis_plot(self, save_path: Optional[str] = None) -> str:
+        """Create comprehensive cost analysis visualization"""
+        try:
+            self._ensure_plotting_libs()
+            
+            active_subs = self._get_active_subscriptions()
+            if not active_subs:
+                return ""
+            
+            costs = [sub.cost for sub in active_subs]
+            categories = [sub.category for sub in active_subs]
+            
+            df = self._pd.DataFrame({'cost': costs, 'category': categories})
+            
+            fig, axes = self._plt.subplots(2, 2, figsize=(14, 10))
+            fig.suptitle('Comprehensive Cost Analysis', fontsize=18, fontweight='bold')
+            
+            # 1. Cost Distribution Histogram
+            axes[0, 0].hist(costs, bins=15, color='skyblue', edgecolor='black', alpha=0.7)
+            axes[0, 0].set_title('Cost Distribution')
+            axes[0, 0].axvline(self._np.mean(costs), color='red', linestyle='--', label='Mean')
+            axes[0, 0].legend()
+            
+            # 2. Box Plot
+            self._sns.boxplot(data=df, y='category', x='cost', palette='Set2', ax=axes[0, 1])
+            axes[0, 1].set_title('Cost Distribution by Category')
+            
+            # 3. Pie Chart
+            category_costs = df.groupby('category')['cost'].sum()
+            axes[1, 0].pie(
+                category_costs.values, labels=category_costs.index, autopct='%1.1f%%',
+                startangle=90, colors=self._sns.color_palette('pastel')
+            )
+            axes[1, 0].set_title('Cost Share by Category')
+            
+            # 4. Violin Plot
+            self._sns.violinplot(data=df, y='category', x='cost', palette='muted', ax=axes[1, 1])
+            axes[1, 1].set_title('Cost Density by Category')
+            
+            self._plt.tight_layout()
+            
+            if save_path:
+                self._plt.savefig(save_path)
+                self._plt.close()
+                return save_path
+                
+            return self._fig_to_base64(fig)
+
+        except Exception as e:
+            logger.error(f"Error generating cost plot: {e}", exc_info=True)
+            return ""
+
+    def create_statistical_summary_plot(self, save_path: Optional[str] = None) -> str:
+        """Create a statistical summary visualization"""
+        try:
+            self._ensure_plotting_libs()
+            
+            active_subs = self._get_active_subscriptions()
+            if not active_subs:
+                return ""
+            
+            costs = self._np.array([sub.cost for sub in active_subs])
+            
+            stats = {
+                'Mean': self._np.mean(costs),
+                'Median': self._np.median(costs),
+                'Std Dev': self._np.std(costs),
+                'Min': self._np.min(costs),
+                'Max': self._np.max(costs),
+                'Total': self._np.sum(costs)
+            }
+            
+            fig, ax = self._plt.subplots(figsize=(10, 6))
+            colors = self._sns.color_palette('coolwarm', len(stats))
+            bars = ax.barh(list(stats.keys()), list(stats.values()), color=colors)
+            
+            ax.set_title('Statistical Summary of Subscription Costs', fontweight='bold')
+            
+            for i, (bar, value) in enumerate(zip(bars, stats.values())):
+                ax.text(value, i, f'${value:.2f}', va='center')
+            
+            self._plt.tight_layout()
+            
+            if save_path:
+                self._plt.savefig(save_path)
+                self._plt.close()
+                return save_path
+                
+            return self._fig_to_base64(fig)
+
+        except Exception as e:
+            logger.error(f"Error generating stats plot: {e}", exc_info=True)
+            return ""
+
+    def create_correlation_heatmap(self, save_path: Optional[str] = None) -> str:
+        """Create a correlation heatmap for numerical features"""
+        try:
+            self._ensure_plotting_libs()
+            
+            active_subs = self._get_active_subscriptions()
+            if len(active_subs) < 3:
+                return ""
+            
             data = []
             for sub in active_subs:
                 data.append({
@@ -257,104 +236,51 @@ class ReportGenerator:
                     'is_monthly': 1.0 if sub.get_billing_cycle() == 'monthly' else 0.0
                 })
             
-            df = pd.DataFrame(data)
+            df = self._pd.DataFrame(data)
             
-            # Check if we have enough variance (avoid constant columns)
-            if df.std().min() == 0:
-                # If any column is constant, drop it
-                df = df.loc[:, df.std() > 0]
+            # Remove constant columns
+            df = df.loc[:, df.std() > 0]
             
-            # Need at least 2 columns for correlation
             if len(df.columns) < 2:
                 return ""
             
-            # Create correlation matrix
             corr_matrix = df.corr()
-            
-            # Check for NaN values
             if corr_matrix.isna().any().any():
                 return ""
             
-            # Create figure
-            fig, ax = plt.subplots(figsize=(8, 6))
-            
-            # Create heatmap with seaborn
-            sns.heatmap(
-                corr_matrix,
-                annot=True,
-                fmt='.2f',
-                cmap='coolwarm',
-                center=0,
-                square=True,
-                linewidths=1,
-                cbar_kws={'shrink': 0.8},
-                ax=ax,
-                vmin=-1,
-                vmax=1
+            fig, ax = self._plt.subplots(figsize=(8, 6))
+            self._sns.heatmap(
+                corr_matrix, annot=True, fmt='.2f', cmap='coolwarm',
+                center=0, square=True, linewidths=1, ax=ax, vmin=-1, vmax=1
             )
-            
-            ax.set_title('Feature Correlation Heatmap', fontweight='bold', fontsize=16)
-            plt.tight_layout()
+            ax.set_title('Feature Correlation Heatmap', fontweight='bold')
+            self._plt.tight_layout()
             
             if save_path:
-                plt.savefig(save_path)
-                plt.close()
+                self._plt.savefig(save_path)
+                self._plt.close()
                 return save_path
-            else:
-                return self._fig_to_base64(fig)
                 
+            return self._fig_to_base64(fig)
+
         except Exception as e:
-            # If any error occurs, return empty string
-            print(f"Error creating correlation heatmap: {e}")
+            logger.error(f"Error generating heatmap: {e}", exc_info=True)
             return ""
-    
-    def _fig_to_base64(self, fig) -> str:
-        """
-        Convert matplotlib figure to base64 encoded string
-        
-        Args:
-            fig: Matplotlib figure object
-        
-        Returns:
-            Base64 encoded image string
-        """
-        import matplotlib.pyplot as plt
-        
-        buffer = io.BytesIO()
-        fig.savefig(buffer, format='png', bbox_inches='tight')
-        buffer.seek(0)
-        image_base64 = base64.b64encode(buffer.read()).decode()
-        plt.close(fig)
-        return f"data:image/png;base64,{image_base64}"
-    
+
     def generate_full_report(self, output_dir: str = './reports') -> Dict[str, str]:
-        """
-        Generate all visualizations and save to directory
-        
-        Args:
-            output_dir: Directory to save report images
-        
-        Returns:
-            Dictionary mapping plot names to file paths
-        """
-        import os
-        os.makedirs(output_dir, exist_ok=True)
-        
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
-        plots = {
-            'category_distribution': self.create_category_distribution_plot(
-                f'{output_dir}/category_dist_{timestamp}.png'
-            ),
-            'cost_analysis': self.create_cost_analysis_plot(
-                f'{output_dir}/cost_analysis_{timestamp}.png'
-            ),
-            'statistical_summary': self.create_statistical_summary_plot(
-                f'{output_dir}/stats_summary_{timestamp}.png'
-            ),
-            'correlation_heatmap': self.create_correlation_heatmap(
-                f'{output_dir}/correlation_{timestamp}.png'
-            )
-        }
-        
-        return plots
+        """Generate all visualizations and save to directory"""
+        try:
+            import os
+            os.makedirs(output_dir, exist_ok=True)
+            
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            
+            return {
+                'category_distribution': self.create_category_distribution_plot(f'{output_dir}/category_dist_{timestamp}.png'),
+                'cost_analysis': self.create_cost_analysis_plot(f'{output_dir}/cost_analysis_{timestamp}.png'),
+                'statistical_summary': self.create_statistical_summary_plot(f'{output_dir}/stats_summary_{timestamp}.png'),
+                'correlation_heatmap': self.create_correlation_heatmap(f'{output_dir}/correlation_{timestamp}.png')
+            }
+        except Exception as e:
+            logger.error(f"Error generating full report: {e}", exc_info=True)
+            return {}

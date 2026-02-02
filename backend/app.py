@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import Config
 from utils import FirebaseHelper
+from utils.logger import setup_logging
 from routes import subscription_bp, analytics_bp
 
 
@@ -20,10 +21,39 @@ def create_app(config_class=Config):
     app = Flask(__name__, 
                 static_folder='../frontend',
                 static_url_path='')
+    
+    # Configure logging first
+    setup_logging(app)
+    
     app.config.from_object(config_class)
     
-    # Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": config_class.CORS_ORIGINS}})
+    # Enable CORS strict mode
+    from flask_cors import CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": config_class.CORS_ORIGINS,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "max_age": 600
+        }
+    })
+    
+    # Setup Rate Limiting
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    
+    # Initialize limiter with in-memory storage for now
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri="memory://",
+        strategy="fixed-window"
+    )
+    
+    # Store limiter in app config for extensions/blueprints if needed
+    app.extensions['limiter'] = limiter
     
     # Initialize Firebase
     FirebaseHelper.initialize(config_class.FIREBASE_CREDENTIALS_PATH)

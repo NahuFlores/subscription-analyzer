@@ -2,14 +2,13 @@
 Alert model - Represents smart notifications for users
 """
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Optional
 import uuid
 
 
 class Alert:
     """
     Alert class for user notifications
-    Types: upcoming_payment, unused_subscription, cost_spike, savings_opportunity
     """
     
     ALERT_TYPES = {
@@ -36,17 +35,55 @@ class Alert:
     }
     
     def __init__(self, user_id: str, alert_type: str, message: str,
-                 metadata: Optional[Dict] = None, alert_id: Optional[str] = None,
+                 metadata: Optional[dict] = None, alert_id: Optional[str] = None,
                  is_read: bool = False):
-        if alert_type not in self.ALERT_TYPES:
-            raise ValueError(f"Invalid alert type: {alert_type}")
+        """
+        Initialize alert with validation
         
+        Raises:
+            TypeError: If arguments have incorrect types
+            ValueError: If arguments have invalid values
+        """
+        # Type Validation
+        if not isinstance(user_id, str):
+            raise TypeError("user_id must be string")
+        if not isinstance(alert_type, str):
+             raise TypeError("alert_type must be string")
+        if not isinstance(message, str):
+            raise TypeError("message must be string")
+        if metadata is not None and not isinstance(metadata, dict):
+            raise TypeError("metadata must be dict or None")
+
+        # Value Validation
+        if not user_id.strip():
+            raise ValueError("user_id must be non-empty string")
+        if not message.strip():
+            raise ValueError("message must be non-empty string")
+            
+        if alert_type not in self.ALERT_TYPES:
+            raise ValueError(
+                f"Invalid alert type: {alert_type}. "
+                f"Must be one of: {', '.join(self.ALERT_TYPES.keys())}"
+            )
+            
+        # Size Validation
+        if len(message) > 500:
+            raise ValueError("message too long (max 500 characters)")
+            
+        if metadata:
+            import sys
+            # Rough estimate of metadata size
+            metadata_str = str(metadata)
+            if len(metadata_str) > 10000:  # ~10KB limit text representation
+                # Using len(str) is safer than sys.getsizeof for cross-platform/deep structures check simply
+                raise ValueError("metadata too large (max 10KB representation)")
+
         self._alert_id = alert_id or str(uuid.uuid4())
-        self._user_id = user_id
+        self._user_id = user_id.strip()
         self._type = alert_type
-        self._message = message
-        self._metadata = metadata or {}
-        self._is_read = is_read
+        self._message = message.strip()
+        self._metadata = metadata.copy() if metadata else {}
+        self._is_read = bool(is_read)
         self._created_at = datetime.now()
     
     @property
@@ -66,7 +103,7 @@ class Alert:
         return self._message
     
     @property
-    def metadata(self) -> Dict:
+    def metadata(self) -> dict:
         return self._metadata.copy()
     
     @property
@@ -93,7 +130,7 @@ class Alert:
         """Mark alert as read"""
         self._is_read = True
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert alert to dictionary for Firebase storage"""
         return {
             'alert_id': self._alert_id,
@@ -109,7 +146,7 @@ class Alert:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Alert':
+    def from_dict(cls, data: dict) -> 'Alert':
         """Create Alert from dictionary"""
         return cls(
             alert_id=data.get('alert_id'),

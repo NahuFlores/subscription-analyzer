@@ -20,6 +20,10 @@ class Config:
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = int(os.getenv('PORT', 5000))
     
+    # Logging configuration
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_FILE = os.getenv('LOG_FILE', 'logs/app.log')
+    
     # Firebase configuration
     FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', '')
     
@@ -66,3 +70,16 @@ class AnalyticsConfig:
     # Machine Learning
     ML_PREDICTION_MONTHS = 6  # Default months for cost predictions
     ML_MIN_DATA_POINTS = 3  # Minimum subscriptions needed for ML
+    SEASONALITY_AMPLITUDE_RATIO = 0.05  # 5% fluctuation
+    NOISE_RATIO = 0.02  # 2% random variation
+    RANDOM_SEED = 42
+    
+    # Predictor Configuration
+    PREDICTION_TREND_SLOPE = 0.15  # 15% increase over time
+    PREDICTION_TREND_THRESHOLD_UP = 1.05
+    PREDICTION_TREND_THRESHOLD_DOWN = 0.95
+    CLUSTERING_N_INIT = 10
+    
+    # Heuristics
+    UNUSED_SUB_DAYS = 90
+    UNUSED_SUB_COST_THRESHOLD = 15.0

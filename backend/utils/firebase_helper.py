@@ -6,7 +6,35 @@ from firebase_admin import credentials, firestore, auth
 from typing import Dict, List, Optional
 import os
 import json
+import logging
+import functools
+from google.cloud.firestore_v1.base_query import FieldFilter
+from google.api_core import retry, exceptions
 from .memory_storage import get_storage
+
+logger = logging.getLogger(__name__)
+
+# Retry policy and timeout configuration
+DEFAULT_TIMEOUT = 10.0  # seconds
+DEFAULT_RETRY = retry.Retry(
+    initial=0.1,
+    maximum=2.0,
+    multiplier=2.0,
+    deadline=DEFAULT_TIMEOUT,
+    predicate=retry.if_exception_type(
+        exceptions.DeadlineExceeded,
+        exceptions.ServiceUnavailable,
+    )
+)
+
+def with_timeout(timeout=DEFAULT_TIMEOUT):
+    """Decorator to add timeout to Firestore operations"""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 class FirebaseHelper:
@@ -23,18 +51,12 @@ class FirebaseHelper:
     def initialize(cls, credentials_path: Optional[str] = None):
         """
         Initialize Firebase Admin SDK
-        
-        Supports two methods:
-        1. FIREBASE_CREDENTIALS env var containing the full JSON string (for Render/production)
-        2. FIREBASE_CREDENTIALS_PATH env var with path to JSON file (for local development)
-        
-        Args:
-            credentials_path: Path to Firebase credentials JSON file
+        Supports environment variable JSON or file path
         """
         if cls._initialized:
             return
         
-        # Always initialize in-memory storage as fallback
+        # Init fallback storage
         if cls._storage is None:
             cls._storage = get_storage()
             print("In-memory storage initialized as fallback")
@@ -42,38 +64,32 @@ class FirebaseHelper:
         try:
             cred = None
             
-            # Method 1: Check for FIREBASE_CREDENTIALS env var (JSON string - for Render)
+            # 1. ENV Var (JSON String)
             credentials_json = os.getenv('FIREBASE_CREDENTIALS')
             if credentials_json:
                 try:
                     cred_dict = json.loads(credentials_json)
                     cred = credentials.Certificate(cred_dict)
-                    print("Firebase credentials loaded from FIREBASE_CREDENTIALS env var")
+                    print("Firebase credentials loaded from ENV")
                 except json.JSONDecodeError as e:
                     print(f"Error parsing FIREBASE_CREDENTIALS JSON: {e}")
             
-            # Method 2: Check for credentials file path
+            # 2. File Path
             if cred is None and credentials_path and os.path.exists(credentials_path):
                 cred = credentials.Certificate(credentials_path)
-                print("Firebase credentials loaded from file path")
+                print("Firebase credentials loaded from file")
             
-            # Initialize Firebase if credentials found
             if cred:
                 firebase_admin.initialize_app(cred)
                 cls._db = firestore.client()
                 cls._initialized = True
-                print("Firebase initialized successfully - data will persist!")
+                print("Firebase initialized successfully")
             else:
-                # No credentials available
                 print("Warning: Running without Firebase credentials (demo mode)")
-                print("   Data will NOT persist across restarts.")
-                print("   Set FIREBASE_CREDENTIALS env var with JSON content to enable persistence.")
                 cls._initialized = True
-                return
             
         except Exception as e:
             print(f"Error initializing Firebase: {e}")
-            print("   Running in offline mode - using in-memory storage")
             cls._initialized = True
     
     @classmethod
@@ -168,21 +184,29 @@ class FirebaseHelper:
         return None
     
     @classmethod
+    @with_timeout()
     def get_user_subscriptions(cls, user_id: str) -> List[Dict]:
-        """Get all subscriptions for a user"""
+        """
+        Get all subscriptions for a user with timeout protection
+        """
+        if not user_id or not isinstance(user_id, str):
+            logger.error(f"Invalid user_id: {user_id}")
+            return []
+
         if cls.is_available():
             try:
+                # Use query with timeout
                 docs = cls._db.collection('subscriptions').where(
-                    'user_id', '==', user_id
-                ).stream()
+                     filter=FieldFilter('user_id', '==', user_id)
+                ).stream(timeout=DEFAULT_TIMEOUT, retry=DEFAULT_RETRY)
+                
                 return [doc.to_dict() for doc in docs]
             except Exception as e:
-                print(f"Error getting user subscriptions from Firebase: {e}")
+                logger.error(f"Error getting user subscriptions from Firebase: {e}")
+                # Fallback to memory on error
         
-        # Fallback to in-memory storage
-        if cls._storage:
-            return cls._storage.get_user_subscriptions(user_id)
-        return []
+        # Fallback
+        return cls._storage.get_user_subscriptions(user_id)
     
     @classmethod
     def update_subscription(cls, subscription_id: str, subscription_data: Dict) -> bool:
