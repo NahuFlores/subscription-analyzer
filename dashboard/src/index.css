@@ -51,7 +51,7 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-family-sans), "Inter", sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-primary);
   min-height: 100vh;
