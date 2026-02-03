@@ -178,13 +178,6 @@ const DatePicker = ({ value, onChange, placeholder = "Select date..." }) => {
                     >
                         <div
                             className="rounded-2xl shadow-2xl shadow-black/50 p-3 sm:p-4 w-[260px] xs:w-[280px] sm:w-[300px] calendar-glass"
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                backdropFilter: 'blur(16px)',
-                                WebkitBackdropFilter: 'blur(16px)',
-                                border: '1px solid rgba(255, 255, 255, 0.08)',
-                                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)',
-                            }}
                         >
                             <DayPicker
                                 mode="single"

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Search, Pencil, Trash2 } from 'lucide-react';
+import { Search, Pencil, Trash2, Plus } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -84,20 +84,20 @@ const SubscriptionList = ({ subscriptions = [], onUpdate }) => {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="group p-4 rounded-2xl bg-white/2 hover:bg-white/8 border border-white/5 hover:border-white/20 transition-all duration-300 flex items-center justify-between backdrop-blur-sm relative"
+                            className="group p-4 rounded-2xl bg-white/2 hover:bg-white/8 border border-white/5 hover:border-white/20 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 backdrop-blur-sm relative"
                         >
-                            <div className="flex items-center gap-5">
+                            <div className="flex items-center gap-4 w-full sm:w-auto">
                                 {/* Icon Placeholder */}
-                                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-white/5 to-white/10 border border-white/10 flex items-center justify-center text-xl font-bold text-primary group-hover:scale-105 transition-all duration-300 shadow-lg shadow-black/20 group-hover:shadow-primary/10">
+                                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-white/5 to-white/10 border border-white/10 flex items-center justify-center text-xl font-bold text-primary group-hover:scale-105 transition-all duration-300 shadow-lg shadow-black/20 group-hover:shadow-primary/10 shrink-0">
                                     {sub.name.charAt(0).toUpperCase()}
                                 </div>
 
-                                <div>
-                                    <h3 className="font-semibold text-white tracking-wide text-lg group-hover:text-primary transition-colors">{sub.name}</h3>
-                                    <div className="flex items-center gap-2 text-xs text-text-secondary mt-1">
-                                        <span className="bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5 font-medium">{sub.category}</span>
-                                        <span className="opacity-50">•</span>
-                                        <span>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold text-white tracking-wide text-lg group-hover:text-primary transition-colors truncate">{sub.name}</h3>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary mt-1">
+                                        <span className="bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5 font-medium whitespace-nowrap">{sub.category}</span>
+                                        <span className="hidden sm:inline opacity-50">•</span>
+                                        <span className="whitespace-nowrap">
                                             Next: {(() => {
                                                 const dateStr = sub.next_billing_date || sub.next_billing;
                                                 if (!dateStr) return 'N/A';
@@ -114,15 +114,15 @@ const SubscriptionList = ({ subscriptions = [], onUpdate }) => {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-end relative">
-                                {/* Cost (shifts left when buttons appear) */}
-                                <div className="text-right transition-transform duration-300 group-hover:-translate-x-[96px]">
+                            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto relative sm:min-h-[40px]">
+                                {/* Cost */}
+                                <div className="text-left sm:text-right transition-transform duration-300 sm:group-hover:-translate-x-[96px]">
                                     <div className="font-bold text-white text-xl tracking-tight">${sub.cost.toFixed(2)}</div>
                                     <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-60">{sub.billing_cycle}</div>
                                 </div>
 
-                                {/* Action Buttons (fade in on hover, positioned absolutely) */}
-                                <div className="absolute right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                {/* Action Buttons */}
+                                <div className="flex sm:absolute sm:right-0 gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
                                     <button
                                         onClick={() => handleEdit(sub)}
                                         className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/40 transition-all"

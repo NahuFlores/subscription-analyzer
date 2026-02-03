@@ -245,8 +245,21 @@ body {
   border-spacing: 0.15rem;
 }
 
-/* Calendar Glass Effect with Animation Hack */
+/* Calendar Glass Effect with Animation Hack & Hardware Acceleration */
 .calendar-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+
+  /* Hardware acceleration to prevent flickering */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+
   animation: backdrop-keepalive 0.1s linear infinite;
 }
 
@@ -294,4 +307,82 @@ input[type=number] {
   -moz-appearance: textfield;
   /* Firefox */
   appearance: textfield;
+}
+
+/* 3D "Juicy" Button Style - Deep Pill Gloss (Refined) */
+.btn-3d {
+  position: relative;
+  /* Translucent Glass Base */
+  background: rgba(99, 102, 241, 0.15);
+  /* Low saturation primary */
+
+  /* Glass Effect */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  /* Soft Border */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  /* Slight top highlight */
+
+  color: white;
+  font-weight: 500;
+  /* Slightly lighter weight */
+  letter-spacing: 0.01em;
+
+  /* Subtle Glow & Shadow */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    /* Soft drop shadow */
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    /* Inner stroke */
+    0 0 15px rgba(99, 102, 241, 0.15);
+  /* Subtle primary glow */
+
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  overflow: hidden;
+}
+
+/* Inner Light Reflection (Top) */
+.btn-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.01) 100%);
+  pointer-events: none;
+}
+
+/* Interactive Hover State */
+.btn-3d:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 20px rgba(99, 102, 241, 0.3);
+  /* Enhanced glow on hover */
+}
+
+/* Active Click State */
+.btn-3d:active {
+  transform: translateY(1px);
+  background: rgba(99, 102, 241, 0.2);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Remove Recharts Focus Outline */
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-sector:focus,
+*:focus:not(:focus-visible) {
+  outline: none !important;
 }

@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import GlassCard from '../ui/GlassCard';
 import { useMemo, useState, useEffect } from 'react';
@@ -35,11 +35,17 @@ const CategoryPieChart = ({ data }) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="rounded-[24px] p-6 flex flex-col h-[350px] relative overflow-hidden"
+            className="rounded-[24px] p-6 flex flex-col h-auto min-h-[340px] relative overflow-hidden"
         >
             <h3 className="text-xl font-bold text-white mb-4">Cost by Category</h3>
 
-            <div className="w-full h-64">
+            <div className="w-full h-64 relative">
+                {/* Central Text for Donut */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                    <span className="text-xs text-text-secondary uppercase tracking-wider block font-medium">Total</span>
+                    <div className="text-2xl font-bold text-white tracking-tight">{formattedTotal}</div>
+                </div>
+
                 {mounted && (
                     <ResponsiveContainer width="100%" height="100%" debounce={50} minHeight={0} minWidth={0}>
                         <PieChart>
@@ -47,36 +53,30 @@ const CategoryPieChart = ({ data }) => {
                                 data={chartData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
+                                innerRadius={75}
+                                outerRadius={100}
                                 paddingAngle={5}
                                 dataKey="value"
                                 stroke="none"
                             >
                                 {chartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                    <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                                itemStyle={{ color: '#fff' }}
+                                contentStyle={{
+                                    backgroundColor: '#0f172a',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
+                                }}
+                                itemStyle={{ color: '#fff', fontWeight: 500 }}
                                 formatter={(value) => `$${value.toFixed(2)}`}
-                            />
-                            <Legend
-                                verticalAlign="bottom"
-                                align="center"
-                                iconType="circle"
-                                wrapperStyle={{ paddingTop: '20px' }}
+                                cursor={false}
                             />
                         </PieChart>
                     </ResponsiveContainer>
                 )}
-            </div>
-
-            {/* Central Text for Donut */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                <span className="text-xs text-text-secondary uppercase tracking-wider block">Total</span>
-                <div className="text-2xl font-bold text-white">{formattedTotal}</div>
             </div>
         </GlassCard>
     );

@@ -1,5 +1,6 @@
 import DashboardLayout from './layouts/DashboardLayout';
 import StatCard from './components/dashboard/StatCard';
+import WaveBackground from './components/ui/WaveBackground';
 import AddSubscriptionModal from './components/dashboard/AddSubscriptionModal';
 import SubscriptionList from './components/dashboard/SubscriptionList';
 import AIInsights from './components/dashboard/AIInsights';
@@ -9,7 +10,7 @@ import ReportsSection from './components/dashboard/ReportsSection';
 
 import { useDashboardData } from './hooks/useDashboardData';
 import RadialMenu from './components/ui/RadialMenu';
-import { DollarSign, CreditCard, TrendingDown, Calendar, LayoutDashboard, FileBarChart } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingDown, Calendar, LayoutDashboard, FileBarChart, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import DashboardSkeleton from './components/dashboard/DashboardSkeleton';
@@ -81,8 +82,8 @@ function App() {
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
                   ${activeTab === tab.id
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                    ? 'bg-linear-to-t from-primary/20 to-transparent text-white border-b border-primary/50 shadow-[0_4px_12px_-2px_rgba(99,102,241,0.1)]'
+                    : 'text-text-secondary hover:text-white hover:bg-white/5 border-b border-transparent'
                   }
                 `}
               >
@@ -103,6 +104,20 @@ function App() {
                   Dashboard
                 </h1>
                 <p className="text-text-secondary mt-1">Welcome back, here's what's happening</p>
+              </div>
+
+              {/* Header Actions (Desktop) */}
+              <div className="hidden md:flex items-center gap-3">
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="btn-3d group relative flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-medium overflow-hidden"
+                >
+                  <WaveBackground />
+                  <div className="relative z-10 flex items-center gap-2">
+                    <Plus size={20} strokeWidth={2.5} />
+                    <span>Add Subscription</span>
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -140,7 +155,10 @@ function App() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               {/* Left Column: Subscriptions */}
               <div className="lg:col-span-2">
-                <SubscriptionList subscriptions={data?.subscriptions} onUpdate={refetch} />
+                <SubscriptionList
+                  subscriptions={data?.subscriptions}
+                  onUpdate={refetch}
+                />
               </div>
 
               {/* Right Column: Insights */}
@@ -158,7 +176,9 @@ function App() {
       </div>
 
       {!isAddModalOpen && activeTab === 'dashboard' && (
-        <RadialMenu onAddSubscription={() => setIsAddModalOpen(true)} />
+        <div className="md:hidden">
+          <RadialMenu onAddSubscription={() => setIsAddModalOpen(true)} />
+        </div>
       )}
     </DashboardLayout>
   )
