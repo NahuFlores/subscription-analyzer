@@ -16,6 +16,3 @@ function raf(time) {
 }
 
 requestAnimationFrame(raf);
-
-// Production log
-console.log('Lenis Smooth Scroll initialized');

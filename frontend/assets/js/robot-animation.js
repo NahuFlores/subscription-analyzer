@@ -6,12 +6,7 @@
 class RobotAnimation {
     constructor() {
         this.robot = document.getElementById('robot-sprite');
-        if (!this.robot) {
-            console.log('Robot sprite not found');
-            return;
-        }
-
-        console.log('Robot animation initializing...');
+        if (!this.robot) return;
 
         this.totalFrames = 125;
         this.currentFrame = 0;
@@ -36,18 +31,14 @@ class RobotAnimation {
             img.onload = () => {
                 loaded++;
                 if (loaded + errors === this.totalFrames) {
-                    console.log(`Frames loaded: ${loaded}, errors: ${errors}`);
-                    // Initial wait before first animation
                     setTimeout(() => this.playAnimation(), 5000);
                 }
             };
 
             img.onerror = () => {
                 errors++;
-                console.log(`Error loading frame ${i}`);
-                if (loaded + errors === this.totalFrames) {
-                    console.log(`Frames loaded: ${loaded}, errors: ${errors}`);
-                    if (loaded > 0) setTimeout(() => this.playAnimation(), 5000);
+                if (loaded + errors === this.totalFrames && loaded > 0) {
+                    setTimeout(() => this.playAnimation(), 5000);
                 }
             };
 
@@ -63,7 +54,7 @@ class RobotAnimation {
         if (this.isPlaying) return;
         this.isPlaying = true;
         this.currentFrame = 0;
-        console.log('Starting robot animation cycle...');
+
 
         const animate = () => {
             if (this.currentFrame < this.totalFrames && this.frames[this.currentFrame]) {
@@ -80,7 +71,6 @@ class RobotAnimation {
 
                 // Add some random variance to the next play time (15s to 25s)
                 const nextWait = this.pauseDuration + (Math.random() - 0.5) * 10000;
-                console.log(`Cycle complete. Next play in ${Math.round(nextWait / 1000)}s`);
                 setTimeout(() => this.playAnimation(), nextWait);
             }
         };

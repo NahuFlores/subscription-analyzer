@@ -58,7 +58,7 @@ const AIInsights = ({ insights = [] }) => {
                     <Lightbulb size={20} />
                 </div>
                 <h2 className="text-xl font-bold text-white">AI Insights</h2>
-                <Tooltip content="AI-powered analysis of your subscriptions" position="right">
+                <Tooltip content="AI-powered analysis of your subscriptions" position="bottom">
                     <HelpCircle size={16} className="text-text-secondary cursor-help" />
                 </Tooltip>
             </div>

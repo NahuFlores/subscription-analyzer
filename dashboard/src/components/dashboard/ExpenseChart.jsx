@@ -56,7 +56,7 @@ const ExpenseChart = ({ data }) => {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-white">Monthly Cost Forecast</h3>
-                    <TooltipUI content="Predicted spending based on your subscriptions" position="right">
+                    <TooltipUI content="Predicted spending based on your subscriptions" position="bottom">
                         <HelpCircle size={14} className="text-text-secondary cursor-help" />
                     </TooltipUI>
                 </div>
