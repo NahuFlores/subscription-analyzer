@@ -76,6 +76,29 @@ def create_app(config_class=Config):
     def internal_error(error):
         return {'error': 'Internal server error'}, 500
     
+    # Warmup: Preload heavy libraries at startup (trades startup time for faster first request)
+    # This uses ~250MB but makes the dashboard load instantly for users
+    def warmup_heavy_libs():
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("Warming up heavy libraries...")
+        try:
+            # Preload analytics libs
+            from analytics.analyzer import _ensure_analytics_libs
+            _ensure_analytics_libs()
+            
+            # Preload ML libs
+            from analytics.predictor import _ensure_ml_libs
+            _ensure_ml_libs()
+            
+            logger.info("Warmup complete - libs preloaded")
+        except Exception as e:
+            logger.warning(f"Warmup failed (non-critical): {e}")
+    
+    # Run warmup in production (when running under gunicorn)
+    if not app.debug:
+        warmup_heavy_libs()
+    
     return app
 
 
