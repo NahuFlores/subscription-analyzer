@@ -1,15 +1,28 @@
 """
 Analytics Analyzer - Main data analysis engine using Pandas and NumPy
+(Lazy loaded to reduce memory on startup)
 """
 import logging
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Any
 from models import Subscription, User
 from config import AnalyticsConfig
 
 logger = logging.getLogger(__name__)
+
+# Lazy-loaded heavy dependencies
+_pd = None
+_np = None
+
+def _ensure_analytics_libs():
+    """Lazy load pandas and numpy only when needed"""
+    global _pd, _np
+    if _pd is None:
+        import pandas as pd
+        import numpy as np
+        _pd = pd
+        _np = np
+        logger.info("Analytics libraries (pandas, numpy) loaded on demand")
 
 def sanitize_for_json(obj: Any) -> Any:
     """
@@ -21,8 +34,9 @@ def sanitize_for_json(obj: Any) -> Any:
     Returns:
         Sanitized object safe for JSON serialization
     """
+    _ensure_analytics_libs()  # Ensure numpy is available
     if isinstance(obj, float):
-        if np.isnan(obj) or np.isinf(obj):
+        if _np.isnan(obj) or _np.isinf(obj):
             return 0.0
     elif isinstance(obj, dict):
         return {key: sanitize_for_json(value) for key, value in obj.items()}
@@ -54,6 +68,7 @@ class SubscriptionAnalyzer:
             TypeError: If arguments have wrong types
             ValueError: If arguments are invalid
         """
+        _ensure_analytics_libs()  # Load heavy libs on first use
         self._validate_inputs(subscriptions, user)
         
         self.subscriptions = subscriptions
@@ -75,7 +90,7 @@ class SubscriptionAnalyzer:
             if not isinstance(sub, Subscription):
                 raise TypeError(f"subscriptions[{idx}] must be Subscription, got {type(sub)}")
 
-    def _create_dataframe(self) -> pd.DataFrame:
+    def _create_dataframe(self) -> Any:
         """
         Convert subscriptions list to Pandas DataFrame for analysis
         
@@ -83,7 +98,7 @@ class SubscriptionAnalyzer:
             DataFrame with subscription data and calculated fields
         """
         if not self.subscriptions:
-            return pd.DataFrame()
+            return _pd.DataFrame()
         
         data_rows = []
         for subscription in self.subscriptions:
@@ -99,7 +114,7 @@ class SubscriptionAnalyzer:
                 'annual_cost': subscription.calculate_annual_cost()
             })
         
-        dataframe = pd.DataFrame(data_rows)
+        dataframe = _pd.DataFrame(data_rows)
         
         # Enforce data types for robust calculations
         if not dataframe.empty:
@@ -109,7 +124,7 @@ class SubscriptionAnalyzer:
             
         return dataframe
 
-    def _get_active_subscriptions(self) -> pd.DataFrame:
+    def _get_active_subscriptions(self) -> Any:
         """
         Get filtered DataFrame with only active subscriptions
         
@@ -117,7 +132,7 @@ class SubscriptionAnalyzer:
             DataFrame containing only active subscriptions
         """
         if self.dataframe.empty:
-            return pd.DataFrame()
+            return _pd.DataFrame()
         
         return self.dataframe[self.dataframe['is_active']].copy()
 
@@ -142,7 +157,7 @@ class SubscriptionAnalyzer:
 
             total_annual_cost = annual_costs.sum()
             
-            if np.isnan(total_annual_cost) or np.isinf(total_annual_cost):
+            if _np.isnan(total_annual_cost) or _np.isinf(total_annual_cost):
                 logger.error(f"Invalid total annual cost for user {self.user.user_id}")
                 return 0.0
                 
@@ -350,8 +365,8 @@ class SubscriptionAnalyzer:
                 return []
             
             costs = active_df['cost'].values
-            mean_cost = np.mean(costs)
-            std_cost = np.std(costs)
+            mean_cost = _np.mean(costs)
+            std_cost = _np.std(costs)
             
             if std_cost == 0:
                 return []

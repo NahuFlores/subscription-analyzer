@@ -1,13 +1,8 @@
 """
 ML Predictor - Machine Learning module for cost predictions
-Uses Scikit-learn for predictive analytics
+Uses Scikit-learn for predictive analytics (lazy loaded to reduce memory)
 """
 import logging
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from models import Subscription
@@ -15,10 +10,34 @@ from config import AnalyticsConfig
 
 logger = logging.getLogger(__name__)
 
+# Lazy-loaded heavy dependencies
+_np = None
+_pd = None
+_LinearRegression = None
+_KMeans = None
+_StandardScaler = None
+
+def _ensure_ml_libs():
+    """Lazy load heavy ML libraries only when needed"""
+    global _np, _pd, _LinearRegression, _KMeans, _StandardScaler
+    if _np is None:
+        import numpy as np
+        import pandas as pd
+        from sklearn.linear_model import LinearRegression
+        from sklearn.cluster import KMeans
+        from sklearn.preprocessing import StandardScaler
+        _np = np
+        _pd = pd
+        _LinearRegression = LinearRegression
+        _KMeans = KMeans
+        _StandardScaler = StandardScaler
+        logger.info("ML libraries loaded on demand")
+
 def sanitize_for_json(obj: Any) -> Any:
     """Replace NaN and Infinity with None/0.0 for JSON serialization"""
+    _ensure_ml_libs()  # Ensure numpy is available
     if isinstance(obj, float):
-        if np.isnan(obj) or np.isinf(obj):
+        if _np.isnan(obj) or _np.isinf(obj):
             return 0.0
     elif isinstance(obj, dict):
         return {k: sanitize_for_json(v) for k, v in obj.items()}
@@ -33,12 +52,13 @@ class CostPredictor:
     """
     
     def __init__(self, subscriptions: List[Subscription]):
+        _ensure_ml_libs()  # Load heavy libs on first use
         if subscriptions is None:
             raise ValueError("Subscriptions list cannot be None")
             
         self.subscriptions = subscriptions
-        self.model = LinearRegression()
-        self.scaler = StandardScaler()
+        self.model = _LinearRegression()
+        self.scaler = _StandardScaler()
     
     def _get_active_subscriptions(self) -> List[Subscription]:
         """Helper to get only active subscriptions"""
@@ -61,20 +81,20 @@ class CostPredictor:
             total_months = historical_months + months_ahead
             
             # Create curves using sine wave + slight upward trend + noise
-            np.random.seed(AnalyticsConfig.RANDOM_SEED)
+            _np.random.seed(AnalyticsConfig.RANDOM_SEED)
             
             # Time points
-            t = np.linspace(0, total_months, total_months)
+            t = _np.linspace(0, total_months, total_months)
             
             # 1. Base trend
-            trend = np.linspace(0, base_monthly * AnalyticsConfig.PREDICTION_TREND_SLOPE, total_months)
+            trend = _np.linspace(0, base_monthly * AnalyticsConfig.PREDICTION_TREND_SLOPE, total_months)
             
             # 2. Seasonality
             amplitude = base_monthly * AnalyticsConfig.SEASONALITY_AMPLITUDE_RATIO
-            seasonality = amplitude * np.sin(t * 0.8)
+            seasonality = amplitude * _np.sin(t * 0.8)
             
             # 3. Random noise
-            noise = np.random.normal(0, base_monthly * AnalyticsConfig.NOISE_RATIO, total_months)
+            noise = _np.random.normal(0, base_monthly * AnalyticsConfig.NOISE_RATIO, total_months)
             
             # Combine components
             values = base_monthly + trend + seasonality + noise
@@ -152,12 +172,12 @@ class CostPredictor:
             if len(data) < n_clusters:
                 return {'clusters': [], 'message': 'Not enough active subscriptions'}
             
-            df = pd.DataFrame(data)
+            df = _pd.DataFrame(data)
             X = df[['cost', 'cycle']].values
             
             # ML Pipeline
             X_scaled = self.scaler.fit_transform(X)
-            kmeans = KMeans(
+            kmeans = _KMeans(
                 n_clusters=n_clusters, 
                 random_state=AnalyticsConfig.RANDOM_SEED, 
                 n_init=AnalyticsConfig.CLUSTERING_N_INIT
@@ -189,7 +209,7 @@ class CostPredictor:
             logger.error(f"Error clustering subscriptions: {e}", exc_info=True)
             return {'clusters': [], 'message': 'Error during clustering'}
 
-    def _get_cluster_label(self, cluster_df: pd.DataFrame) -> str:
+    def _get_cluster_label(self, cluster_df: Any) -> str:
         """Generate descriptive label for cluster"""
         avg_cost = cluster_df['cost'].mean()
         if avg_cost < 10:
