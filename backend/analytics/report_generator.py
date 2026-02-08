@@ -49,20 +49,26 @@ class ReportGenerator:
                 raise
     
     def _setup_style(self):
-        """Configure matplotlib and seaborn styling"""
+        """Configure matplotlib and seaborn styling (memory-optimized for Render)"""
         self._sns.set_style("darkgrid")
         self._sns.set_palette("husl")
         
+        # Memory-optimized settings for Render free tier (512MB)
         rc_params = {
-            'figure.figsize': (10, 6),
-            'figure.dpi': 100,
-            'savefig.dpi': 300,
+            'figure.figsize': (8, 4),      # Reduced from (10, 6)
+            'figure.dpi': 72,               # Reduced from 100
+            'savefig.dpi': 100,             # Reduced from 300 (saves ~60% memory)
             'savefig.bbox': 'tight',
-            'font.size': 10,
-            'axes.titlesize': 14,
-            'axes.labelsize': 12
+            'font.size': 9,                 # Slightly smaller
+            'axes.titlesize': 12,
+            'axes.labelsize': 10,
+            'figure.max_open_warning': 5,   # Warn if too many figures open
         }
         self._plt.rcParams.update(rc_params)
+        
+        # Enable aggressive memory cleanup
+        import matplotlib
+        matplotlib.rcParams['agg.path.chunksize'] = 10000
 
     def _get_active_subscriptions(self) -> List[Subscription]:
         """Helper to get only active subscriptions (DRY)"""
@@ -500,8 +506,20 @@ class ReportGenerator:
             # Build PDF with header/footer
             doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
             buffer.seek(0)
-            return buffer.read()
+            pdf_bytes = buffer.read()
+            
+            # Force memory cleanup after generating plots
+            import gc
+            self._plt.close('all')
+            gc.collect()
+            
+            return pdf_bytes
             
         except Exception as e:
             logger.error(f"Error generating PDF report: {e}", exc_info=True)
+            # Cleanup even on error
+            import gc
+            if self._plt:
+                self._plt.close('all')
+            gc.collect()
             return b""
