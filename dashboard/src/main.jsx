@@ -25,3 +25,18 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// Hide splash screen after React mounts
+requestAnimationFrame(() => {
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    // Small delay for smoother transition
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      document.body.classList.add('app-loaded');
+
+      // Remove splash from DOM after animation completes
+      setTimeout(() => splash.remove(), 500);
+    }, 300);
+  }
+});

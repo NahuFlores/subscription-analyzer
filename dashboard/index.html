@@ -13,6 +13,102 @@
 </head>
 
 <body>
+  <!-- Minimal Splash Screen (logo + spinner only) -->
+  <div id="splash-screen">
+    <div class="splash-logo">
+      <img src="/logo.svg" alt="" />
+    </div>
+    <div class="splash-spinner"></div>
+  </div>
+
+  <style>
+    /* Splash screen - matches dashboard colorimetry (#0a0a0f, #6366f1) */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0f;
+      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+    }
+
+    #splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-logo {
+      width: 72px;
+      height: 72px;
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+
+    .splash-logo img {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 24px rgba(99, 102, 241, 0.5)) drop-shadow(0 0 48px rgba(139, 92, 246, 0.25));
+    }
+
+    .splash-spinner {
+      margin-top: 28px;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(99, 102, 241, 0.15);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.03);
+        opacity: 0.9;
+      }
+    }
+
+    /* Accessibility: respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+
+      .splash-logo,
+      .splash-spinner {
+        animation: none;
+      }
+
+      #splash-screen {
+        transition: none;
+      }
+    }
+
+    /* Hide orbs until app loads */
+    body::before,
+    body::after {
+      opacity: 0;
+      transition: opacity 1s ease-out;
+    }
+
+    body.app-loaded::before,
+    body.app-loaded::after {
+      opacity: 1;
+    }
+  </style>
+
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
