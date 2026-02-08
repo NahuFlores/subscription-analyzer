@@ -284,3 +284,224 @@ class ReportGenerator:
         except Exception as e:
             logger.error(f"Error generating full report: {e}", exc_info=True)
             return {}
+
+    def generate_pdf_report(self) -> bytes:
+        """Generate a consolidated PDF report with all visualizations"""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.units import inch
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.colors import HexColor, Color
+            from reportlab.lib.enums import TA_CENTER, TA_LEFT
+            from reportlab.lib import colors
+            
+            self._ensure_plotting_libs()
+            
+            # Create PDF buffer
+            buffer = io.BytesIO()
+            
+            # Custom document class for header/footer
+            class NumberedCanvas:
+                def __init__(self, canvas, doc):
+                    self.canvas = canvas
+                    self.doc = doc
+                    self.pages = []
+                    
+            def add_header_footer(canvas, doc):
+                """Add header and footer to each page"""
+                canvas.saveState()
+                width, height = A4
+                
+                # Header - Title and line
+                canvas.setFont('Helvetica-Bold', 10)
+                canvas.setFillColor(HexColor('#6366f1'))
+                canvas.drawString(0.5*inch, height - 0.35*inch, "Subscription Analytics Report")
+                
+                # Header line
+                canvas.setStrokeColor(HexColor('#e2e8f0'))
+                canvas.setLineWidth(1)
+                canvas.line(0.5*inch, height - 0.45*inch, width - 0.5*inch, height - 0.45*inch)
+                
+                # Footer - Page number and date
+                canvas.setFont('Helvetica', 9)
+                canvas.setFillColor(HexColor('#64748b'))
+                
+                # Page number (centered)
+                page_num = canvas.getPageNumber()
+                canvas.drawCentredString(width / 2, 0.35*inch, f"Page {page_num}")
+                
+                # Date (right aligned)
+                canvas.drawRightString(width - 0.5*inch, 0.35*inch, 
+                    datetime.now().strftime('%B %d, %Y'))
+                
+                # Footer line
+                canvas.line(0.5*inch, 0.5*inch, width - 0.5*inch, 0.5*inch)
+                
+                canvas.restoreState()
+            
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=A4,
+                rightMargin=0.5*inch,
+                leftMargin=0.5*inch,
+                topMargin=0.7*inch,  # More space for header
+                bottomMargin=0.7*inch  # More space for footer
+            )
+            
+            # Styles
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=28,
+                textColor=HexColor('#6366f1'),
+                alignment=TA_CENTER,
+                spaceAfter=10
+            )
+            subtitle_style = ParagraphStyle(
+                'CustomSubtitle',
+                parent=styles['Normal'],
+                fontSize=12,
+                textColor=HexColor('#64748b'),
+                alignment=TA_CENTER,
+                spaceAfter=40
+            )
+            section_style = ParagraphStyle(
+                'SectionTitle',
+                parent=styles['Heading2'],
+                fontSize=16,
+                textColor=HexColor('#1e293b'),
+                spaceBefore=20,
+                spaceAfter=10
+            )
+            
+            elements = []
+            
+            # Title Page
+            elements.append(Spacer(1, 1.5*inch))
+            elements.append(Paragraph("Subscription Analytics Report", title_style))
+            elements.append(Paragraph(
+                f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}",
+                subtitle_style
+            ))
+            
+            # Summary stats
+            active_subs = self._get_active_subscriptions()
+            total_cost = sum(sub.cost for sub in active_subs)
+            
+            # Summary Table with better styling
+            summary_data = [
+                ['Metric', 'Value'],
+                ['Total Active Subscriptions', str(len(active_subs))],
+                ['Monthly Cost', f'${total_cost:.2f}'],
+                ['Annual Projection', f'${total_cost * 12:.2f}']
+            ]
+            summary_table = Table(summary_data, colWidths=[3*inch, 2.5*inch])
+            summary_table.setStyle(TableStyle([
+                # Header row
+                ('BACKGROUND', (0, 0), (-1, 0), HexColor('#6366f1')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                # Data rows
+                ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f8fafc')),
+                ('TEXTCOLOR', (0, 1), (-1, -1), HexColor('#1e293b')),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 11),
+                # Alignment and padding
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+                ('TOPPADDING', (0, 0), (-1, -1), 12),
+                ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                # Borders
+                ('GRID', (0, 0), (-1, -1), 1, HexColor('#e2e8f0')),
+                ('BOX', (0, 0), (-1, -1), 2, HexColor('#6366f1'))
+            ]))
+            elements.append(summary_table)
+            elements.append(PageBreak())
+            
+            # Subscriptions Table
+            if active_subs:
+                elements.append(Paragraph("Your Subscriptions", section_style))
+                elements.append(Spacer(1, 0.2*inch))
+                
+                # Build subscription data
+                sub_data = [['Name', 'Category', 'Cost', 'Billing']]
+                for sub in active_subs:
+                    sub_data.append([
+                        sub.name,
+                        sub.category,
+                        f'${sub.cost:.2f}',
+                        sub.get_billing_cycle().capitalize()
+                    ])
+                
+                sub_table = Table(sub_data, colWidths=[2.2*inch, 1.8*inch, 1.2*inch, 1.3*inch])
+                
+                # Base styles
+                table_styles = [
+                    # Header
+                    ('BACKGROUND', (0, 0), (-1, 0), HexColor('#1e293b')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 11),
+                    # Data
+                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 1), (-1, -1), 10),
+                    ('TEXTCOLOR', (0, 1), (-1, -1), HexColor('#374151')),
+                    # Alignment
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('ALIGN', (0, 1), (1, -1), 'LEFT'),
+                    ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+                    ('ALIGN', (3, 1), (3, -1), 'CENTER'),
+                    # Padding
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                    ('TOPPADDING', (0, 0), (-1, -1), 10),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                    # Borders
+                    ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#e5e7eb')),
+                    ('BOX', (0, 0), (-1, -1), 1.5, HexColor('#1e293b'))
+                ]
+                
+                # Alternating row colors
+                for i in range(1, len(sub_data)):
+                    if i % 2 == 0:
+                        table_styles.append(('BACKGROUND', (0, i), (-1, i), HexColor('#f9fafb')))
+                    else:
+                        table_styles.append(('BACKGROUND', (0, i), (-1, i), colors.white))
+                
+                sub_table.setStyle(TableStyle(table_styles))
+                elements.append(sub_table)
+                elements.append(PageBreak())
+            
+            # Generate plots and add to PDF
+            plots = [
+                ('Category Distribution', self.create_category_distribution_plot),
+                ('Cost Analysis', self.create_cost_analysis_plot),
+                ('Statistical Summary', self.create_statistical_summary_plot),
+                ('Correlation Heatmap', self.create_correlation_heatmap)
+            ]
+            
+            for title, plot_func in plots:
+                base64_img = plot_func()
+                if base64_img:
+                    elements.append(Paragraph(title, section_style))
+                    
+                    # Convert base64 to image
+                    img_data = base64.b64decode(base64_img.split(',')[1])
+                    img_buffer = io.BytesIO(img_data)
+                    img = Image(img_buffer, width=6.5*inch, height=4*inch)
+                    elements.append(img)
+                    elements.append(Spacer(1, 0.5*inch))
+            
+            # Build PDF with header/footer
+            doc.build(elements, onFirstPage=add_header_footer, onLaterPages=add_header_footer)
+            buffer.seek(0)
+            return buffer.read()
+            
+        except Exception as e:
+            logger.error(f"Error generating PDF report: {e}", exc_info=True)
+            return b""

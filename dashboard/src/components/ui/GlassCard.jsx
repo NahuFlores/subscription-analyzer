@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 /**
@@ -20,13 +21,16 @@ const GlassCard = ({
     hoverEffect = false,
     ...props
 }) => {
+    // Optimization: Memoize the class string to prevent recalculation on every render
+    const cardClasses = useMemo(() => `
+        glass rounded-[24px]
+        ${hoverEffect ? 'hover:translate-y-[-6px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-transform cursor-pointer' : ''}
+        ${className}
+    `, [hoverEffect, className]);
+
     return (
         <motion.div
-            className={`
-                glass rounded-[24px]
-                ${hoverEffect ? 'hover:translate-y-[-4px] transition-transform duration-300 will-change-transform' : ''}
-                ${className}
-            `}
+            className={cardClasses}
             {...props}
         >
             {children}

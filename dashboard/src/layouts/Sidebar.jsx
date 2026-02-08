@@ -101,7 +101,6 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                     left-4 md:left-6
                     will-change-[width,transform,opacity]
                     animate-[backdrop-keepalive_0.1s_linear_infinite]
-                    shadow-[0_21px_40px_-2px_rgba(0,0,0,0.8)]
                 `}
                 style={{
                     backdropFilter: 'blur(20px) saturate(150%)',
@@ -120,6 +119,7 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                     <AnimatePresence>
                         {(isHovered || isMobileOpen || isMobile) && (
                             <motion.span
+                                key="logo-text"
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
@@ -132,9 +132,16 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
 
                         {/* Mobile Close Button */}
                         {isMobileOpen && (
-                            <button onClick={closeMobile} className="md:hidden ml-auto text-white/50 hover:text-white">
+                            <motion.button
+                                key="close-btn"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={closeMobile}
+                                className="md:hidden ml-auto text-white/50 hover:text-white"
+                            >
                                 <LogOut size={20} className="rotate-180" />
-                            </button>
+                            </motion.button>
                         )}
                     </AnimatePresence>
                 </div>

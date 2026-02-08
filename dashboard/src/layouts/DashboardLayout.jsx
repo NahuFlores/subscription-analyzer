@@ -1,5 +1,6 @@
 
 import Sidebar from './Sidebar';
+import AppBackground from '../components/ui/AppBackground';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
@@ -12,24 +13,18 @@ const DashboardLayout = ({ children }) => {
             {/* Noise Texture Overlay */}
             <div className="fixed inset-0 z-9999 pointer-events-none opacity-[0.04] bg-noise mix-blend-overlay"></div>
 
-            {/* Background Cinematic Gradients (Orbs) */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                {/* Top Left Haze */}
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
+            {/* Global Glass Warm-up Layer (Ensures GPU Backdrop-Filter cache remains hot) */}
+            <div
+                className="fixed bottom-0 left-0 w-full h-px opacity-[0.003] pointer-events-none z-[-1]"
+                style={{
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    animation: 'backdrop-keepalive 0.5s linear infinite'
+                }}
+            />
 
-                {/* Central liquid orb (WebP Image) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-60 animate-pulse-slow mix-blend-screen pointer-events-none blur-[80px]">
-                    <img
-                        src={`${import.meta.env.BASE_URL}orbe.webp`}
-                        alt="Background Orb"
-                        className="w-full h-full object-contain"
-                        fetchpriority="high"
-                    />
-                </div>
-
-                {/* Bottom Right Haze */}
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-pink/5 rounded-full blur-[100px]" />
-            </div>
+            {/* Background Shader - GrainGradient */}
+            <AppBackground />
 
             {/* Mobile Header / Trigger */}
             <div className={`md:hidden fixed top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
@@ -45,7 +40,7 @@ const DashboardLayout = ({ children }) => {
 
             {/* Main Content Area - Responsive Padding */}
             <main className="relative z-10 p-4 pt-20 md:pt-4 md:pl-32 min-h-screen">
-                <div className="max-w-7xl mx-auto space-y-8">
+                <div className="max-w-7xl mx-auto flex flex-col gap-8">
                     {children}
                 </div>
             </main>

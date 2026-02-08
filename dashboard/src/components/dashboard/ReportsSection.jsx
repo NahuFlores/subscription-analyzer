@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Download, BarChart3, PieChart, TrendingUp, Grid3x3 } from 'lucide-react';
+import { Download, BarChart3, PieChart, TrendingUp, Grid3x3, FileText } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import Button from '../ui/Button';
 import anime from 'animejs';
@@ -8,6 +8,7 @@ import { API_BASE_URL as API_BASE, USER_ID } from '../../config/api';
 const ReportsSection = () => {
     const [reports, setReports] = useState({});
     const [loading, setLoading] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
     const [activeReport, setActiveReport] = useState('all');
     const [hasLoaded, setHasLoaded] = useState(false);
     const sectionRef = useRef(null);
@@ -83,6 +84,31 @@ const ReportsSection = () => {
         link.click();
     };
 
+    const downloadPDF = async () => {
+        setPdfLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/analytics/report/pdf?user_id=${USER_ID}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `subscription_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            if (import.meta.env.DEV) {
+                console.error('Error downloading PDF:', error);
+            }
+        } finally {
+            setPdfLoading(false);
+        }
+    };
+
     return (
         <div ref={sectionRef} className="space-y-6">
             {/* Header */}
@@ -93,6 +119,15 @@ const ReportsSection = () => {
                         Statistical visualizations powered by Matplotlib & Seaborn
                     </p>
                 </div>
+                <Button
+                    variant="cta"
+                    icon={FileText}
+                    onClick={downloadPDF}
+                    loading={pdfLoading}
+                    disabled={pdfLoading || Object.keys(reports).length === 0}
+                >
+                    Export PDF
+                </Button>
             </div>
 
             {/* Report Type Selector */}

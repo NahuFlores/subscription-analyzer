@@ -2,8 +2,7 @@
 Flask Application - Main entry point
 Subscription Analyzer Backend
 """
-from flask import Flask, jsonify, send_from_directory
-from flask_cors import CORS
+from flask import Flask
 import sys
 import os
 
@@ -13,7 +12,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import Config
 from utils import FirebaseHelper
 from utils.logger import setup_logging
-from routes import subscription_bp, analytics_bp
+from extensions import limiter, talisman, cors
+from routes import subscription_bp, analytics_bp, main_bp
 
 
 def create_app(config_class=Config):
@@ -27,9 +27,12 @@ def create_app(config_class=Config):
     
     app.config.from_object(config_class)
     
-    # Enable CORS strict mode
-    from flask_cors import CORS
-    CORS(app, resources={
+    # Initialize Extensions
+    # ---------------------
+    
+    # CORS
+    # Using strict mode from config
+    cors.init_app(app, resources={
         r"/api/*": {
             "origins": config_class.CORS_ORIGINS,
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -39,21 +42,22 @@ def create_app(config_class=Config):
         }
     })
     
-    # Setup Rate Limiting
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
+    # Rate Limiting
+    limiter.init_app(app)
     
-    # Initialize limiter with in-memory storage for now
-    limiter = Limiter(
-        app=app,
-        key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"],
-        storage_uri="memory://",
-        strategy="fixed-window"
-    )
+    # Security Headers (Talisman)
+    # Define Content Security Policy (CSP)
+    # For development/dashboard, we need to be somewhat permissive with scripts and styles
+    csp = {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"], # unsafe-eval needed for some dev tools
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com", "data:"],
+        'img-src': ["'self'", "data:", "blob:"],
+        'connect-src': ["'self'", "http://localhost:*", "ws://localhost:*"] # Allow WebSocket for HMR if needed
+    }
     
-    # Store limiter in app config for extensions/blueprints if needed
-    app.extensions['limiter'] = limiter
+    talisman.init_app(app, content_security_policy=csp, force_https=False) # Force HTTPS false for localhost
     
     # Initialize Firebase
     FirebaseHelper.initialize(config_class.FIREBASE_CREDENTIALS_PATH)
@@ -61,78 +65,16 @@ def create_app(config_class=Config):
     # Register blueprints
     app.register_blueprint(subscription_bp)
     app.register_blueprint(analytics_bp)
-    
-    # Root route - serve frontend
-    @app.route('/')
-    def index():
-        return send_from_directory(app.static_folder, 'index.html')
-
-    # Dashboard routes - SPA with client-side routing
-    @app.route('/dashboard')
-    @app.route('/dashboard/')
-    @app.route('/dashboard/<path:path>')
-    def dashboard(path=''):
-        """Serve the React dashboard SPA"""
-        dashboard_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../dashboard/dist')
-        
-        # Check if dashboard/dist exists
-        if not os.path.exists(dashboard_folder):
-            return jsonify({
-                'error': 'Dashboard not built',
-                'message': 'Run "cd dashboard && npm run build" to build the dashboard'
-            }), 503
-        
-        # Try to serve specific file if it exists (for assets)
-        if path:
-            file_path = os.path.join(dashboard_folder, path)
-            if os.path.isfile(file_path):
-                return send_from_directory(dashboard_folder, path)
-        
-        # Otherwise serve index.html for client-side routing
-        response = send_from_directory(dashboard_folder, 'index.html')
-        
-        # Disable caching for HTML to ensure updates are seen
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-        return response
-    
-    # Health check endpoint
-    @app.route('/api/health', methods=['GET'])
-    def health_check():
-        return jsonify({
-            'status': 'healthy',
-            'firebase_available': FirebaseHelper.is_available(),
-            'version': '1.0.0'
-        }), 200
-    
-    # Categories endpoint
-    @app.route('/api/categories', methods=['GET'])
-    def get_categories():
-        from models import Category
-        categories = []
-        
-        for cat_name in Category.get_all_categories():
-            cat_info = Category.get_category_info(cat_name)
-            categories.append({
-                'name': cat_name,
-                'icon': cat_info['icon'],
-                'color': cat_info['color']
-            })
-        
-        return jsonify({
-            'success': True,
-            'categories': categories
-        }), 200
+    app.register_blueprint(main_bp)
     
     # Error handlers
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({'error': 'Not found'}), 404
+        return {'error': 'Not found'}, 404
     
     @app.errorhandler(500)
     def internal_error(error):
-        return jsonify({'error': 'Internal server error'}), 500
+        return {'error': 'Internal server error'}, 500
     
     return app
 
@@ -145,7 +87,7 @@ if __name__ == '__main__':
     app = create_app()
     
     print("=" * 60)
-    print("Subscription Analyzer Backend")
+    print("Subscription Analyzer Backend (Refactored)")
     print("=" * 60)
     print(f"Server running on: http://{Config.HOST}:{Config.PORT}")
     print(f"Firebase: {'Connected' if FirebaseHelper.is_available() else 'Offline Mode'}")
@@ -153,16 +95,9 @@ if __name__ == '__main__':
     print("=" * 60)
     print("\nAPI Endpoints:")
     print("  GET  /api/health")
-    print("  GET  /api/categories")
-    print("  GET  /api/subscriptions?user_id=<id>")
-    print("  POST /api/subscriptions")
-    print("  GET  /api/subscriptions/<id>")
-    print("  PUT  /api/subscriptions/<id>")
-    print("  DELETE /api/subscriptions/<id>")
-    print("  GET  /api/analytics/summary?user_id=<id>")
-    print("  GET  /api/analytics/predictions?user_id=<id>")
-    print("  GET  /api/analytics/charts?user_id=<id>")
-    print("  GET  /api/analytics/insights?user_id=<id>")
+    print("  GET  /api/subscriptions")
+    print("  GET  /api/analytics/summary")
+    print("  ... and more")
     print("=" * 60)
     print("\nPress CTRL+C to stop the server\n")
     
@@ -171,3 +106,4 @@ if __name__ == '__main__':
         port=Config.PORT,
         debug=Config.DEBUG
     )
+

@@ -253,3 +253,52 @@ def generate_report():
     except Exception as e:
         logger.error(f"Error in generate_report: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+
+@analytics_bp.route('/report/pdf', methods=['GET'])
+def generate_pdf_report():
+    """Generate a consolidated PDF report with all visualizations"""
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+    
+    try:
+        from analytics import ReportGenerator
+        from flask import send_file
+        import io
+        
+        subscriptions, _ = _get_user_objects(user_id)
+        
+        if not subscriptions:
+            return jsonify({
+                'success': False,
+                'message': 'No subscriptions available for PDF report'
+            }), 400
+        
+        report_gen = ReportGenerator(subscriptions)
+        pdf_bytes = report_gen.generate_pdf_report()
+        
+        if not pdf_bytes:
+            return jsonify({
+                'success': False,
+                'message': 'Failed to generate PDF report'
+            }), 500
+        
+        # Return PDF as downloadable file
+        pdf_buffer = io.BytesIO(pdf_bytes)
+        pdf_buffer.seek(0)
+        
+        from datetime import datetime
+        filename = f"subscription_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=False,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in generate_pdf_report: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500

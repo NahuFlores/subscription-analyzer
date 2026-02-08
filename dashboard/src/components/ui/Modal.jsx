@@ -1,18 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import GlassCard from './GlassCard';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, className }) => {
 
     // Lock body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+            // Also lock root to prevent mobile scroll
+            document.documentElement.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
         }
         return () => {
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
         };
     }, [isOpen]);
 
@@ -24,55 +29,55 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     }, [onClose]);
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/70 backdrop-blur-md z-100"
-                        style={{
-                            width: '100vw',
-                            height: '100vh',
-                            top: 0,
-                            left: 0,
-                            position: 'fixed'
-                        }}
-                    />
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? "modal-title" : undefined}
+            className={`fixed inset-0 flex items-center justify-center transition-opacity duration-200 ${isOpen ? 'z-100 opacity-100 pointer-events-auto' : 'z-[-1] opacity-0 pointer-events-none'}`}
+        >
+            {/* Backdrop */}
+            <motion.div
+                initial={false}
+                animate={{ opacity: isOpen ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={onClose}
+                className="fixed inset-0 bg-black/60"
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+            />
 
-                    {/* Modal Content */}
-                    <div className="fixed inset-0 flex items-center justify-center z-101 pointer-events-none p-2 sm:p-4" style={{ width: '100vw', height: '100vh' }}>
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="bg-linear-to-br from-[#0f1218] to-[#1a1f2e] border border-white/10 border-t-white/20 w-full max-w-lg rounded-[20px] sm:rounded-[24px] shadow-2xl shadow-primary/5 pointer-events-auto flex flex-col backdrop-blur-xl"
-                        >
-                            {/* Header */}
-                            <div className="px-5 py-3 sm:px-6 sm:py-4 border-b border-white/5 flex justify-between items-center bg-linear-to-r from-white/5 to-white/2">
-                                <h3 className="text-lg sm:text-xl font-semibold text-white tracking-wide">{title}</h3>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-all hover:scale-110"
-                                    aria-label="Close modal"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
+            {/* Modal Content */}
+            <div className="relative z-101 w-full flex items-center justify-center p-4">
+                <motion.div
+                    initial={false}
+                    animate={{
+                        scale: isOpen ? 1 : 0.97,
+                        opacity: isOpen ? 1 : 0,
+                        y: isOpen ? 0 : 8
+                    }}
+                    transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+                    className={className || "bg-[#0f1218]/95 border border-white/10 w-full max-w-lg rounded-[24px] shadow-2xl flex flex-col backdrop-blur-xl"}
+                >
+                    {/* Header */}
+                    {title && (
+                        <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                            <h3 id="modal-title" className="text-lg font-semibold text-white tracking-wide">{title}</h3>
+                            <button
+                                onClick={onClose}
+                                aria-label="Cerrar modal"
+                                className="p-2 -mr-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                    )}
 
-                            {/* Body */}
-                            <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar max-h-[70vh]">
-                                {children}
-                            </div>
-                        </motion.div>
+                    {/* Body */}
+                    <div className={`p-0 max-h-[70vh] ${className?.includes('overflow-hidden') ? '' : 'overflow-y-auto'} ${className?.includes('scrollbar-hide') ? '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]' : 'custom-scrollbar'}`}>
+                        {children}
                     </div>
-                </>
-            )}
-        </AnimatePresence>
+                </motion.div>
+            </div>
+        </div>
     );
 };
 

@@ -6,8 +6,8 @@ const StatCard = ({ label, value, subtext, icon: Icon, color, delay = 0 }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay }}
-            hoverEffect={true}
-            className="relative p-6 flex flex-col justify-between overflow-hidden group border border-white/5 hover:border-white/20 hover:shadow-2xl hover:shadow-primary/20 cursor-default select-none"
+            hoverEffect={false}
+            className="relative p-6 flex flex-col justify-between overflow-hidden group border border-white/5 hover:border-white/20 cursor-default select-none"
         >
             {/* Shimmer Effect */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/5 to-transparent z-10 pointer-events-none" />
@@ -19,7 +19,7 @@ const StatCard = ({ label, value, subtext, icon: Icon, color, delay = 0 }) => {
             />
 
             <div className="flex justify-between items-start mb-4 relative z-20">
-                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white shadow-lg backdrop-blur-md group-hover:bg-white/10 transition-colors">
+                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-white backdrop-blur-md group-hover:bg-white/10 transition-colors">
                     <Icon size={24} style={{ color: color, filter: `drop-shadow(0 0 12px ${color})` }} />
                 </div>
             </div>

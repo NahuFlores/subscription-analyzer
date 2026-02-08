@@ -24,3 +24,17 @@ export const buildApiUrl = (endpoint) => {
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${API_BASE_URL}${normalizedEndpoint}`;
 };
+
+/**
+ * Helper to perform authenticated fetches
+ * Automatically appends user_id to query params
+ */
+export const fetchWithAuth = async (endpoint, options = {}) => {
+    const urlString = buildApiUrl(endpoint);
+    const url = new URL(urlString, window.location.origin);
+
+    // Always append user_id
+    url.searchParams.append('user_id', USER_ID);
+
+    return fetch(url.toString(), options);
+};

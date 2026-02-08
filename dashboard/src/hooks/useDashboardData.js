@@ -75,7 +75,10 @@ export const useDashboardData = () => {
                     active_subs: summaryData.analytics?.statistics?.active_subscriptions || 0,
                     potential_savings: summaryData.analytics?.potential_savings?.total_potential_monthly_savings || 0,
                 },
-                subscriptions: subsData.subscriptions || [],
+                subscriptions: (subsData.subscriptions || []).map(sub => ({
+                    ...sub,
+                    id: sub.subscription_id || sub.id
+                })),
                 upcoming_payments: summaryData.analytics?.upcoming_payments || [],
                 insights: insightsData.insights || [],
                 charts: {
@@ -84,19 +87,16 @@ export const useDashboardData = () => {
                 }
             };
 
-            console.log('📊 Dashboard data updated:', {
-                subscriptions: newData.subscriptions.length,
-                totalCost: newData.stats.total_cost,
-                activeSubs: newData.stats.active_subs
-            });
-
             setData(newData);
 
             if (showLoading) {
                 setError(null);
             }
         } catch (err) {
-            console.error('❌ Error fetching dashboard data:', err);
+            // Only log errors in development
+            if (import.meta.env.DEV) {
+                console.error('Error fetching dashboard data:', err);
+            }
             if (showLoading) {
                 setError(err.message);
             }

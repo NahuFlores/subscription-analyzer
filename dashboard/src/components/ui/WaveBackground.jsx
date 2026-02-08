@@ -3,7 +3,7 @@ import anime from 'animejs';
 
 const BAR_COUNT = 12; // Reduced count for a button
 
-export default function WaveBackground() {
+export default function WaveBackground({ barClassName = "bg-linear-to-t from-indigo-500 via-purple-500 to-cyan-400" }) {
     const barsRef = useRef([]);
 
     useEffect(() => {
@@ -52,7 +52,7 @@ export default function WaveBackground() {
                 <div
                     key={i}
                     ref={(el) => { if (el) barsRef.current[i] = el; }}
-                    className="flex-1 max-w-[4px] rounded-t-sm bg-linear-to-t from-indigo-500 via-purple-500 to-cyan-400"
+                    className={`flex-1 max-w-[4px] rounded-t-sm ${barClassName}`}
                     style={{
                         height: '20%',
                     }}

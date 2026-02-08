@@ -1,7 +1,7 @@
 import DashboardLayout from './layouts/DashboardLayout';
 import StatCard from './components/dashboard/StatCard';
 import WaveBackground from './components/ui/WaveBackground';
-import AddSubscriptionModal from './components/dashboard/AddSubscriptionModal';
+import SubscriptionModal from './components/dashboard/SubscriptionModal';
 import SubscriptionList from './components/dashboard/SubscriptionList';
 import AIInsights from './components/dashboard/AIInsights';
 import ExpenseChart from './components/dashboard/ExpenseChart';
@@ -18,6 +18,7 @@ import DashboardSkeleton from './components/dashboard/DashboardSkeleton';
 function App() {
   const { data, loading, refetch } = useDashboardData();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'reports'
 
   if (loading) {
@@ -80,7 +81,7 @@ function App() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
+                  flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer select-none
                   ${activeTab === tab.id
                     ? 'bg-linear-to-t from-primary/20 to-transparent text-white border-b border-primary/50 shadow-[0_4px_12px_-2px_rgba(99,102,241,0.1)]'
                     : 'text-text-secondary hover:text-white hover:bg-white/5 border-b border-transparent'
@@ -109,7 +110,10 @@ function App() {
               {/* Header Actions (Desktop) */}
               <div className="hidden md:flex items-center gap-3">
                 <button
-                  onClick={() => setIsAddModalOpen(true)}
+                  onClick={() => {
+                    setEditingSubscription(null);
+                    setIsAddModalOpen(true);
+                  }}
                   className="btn-3d group relative flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-medium overflow-hidden"
                 >
                   <WaveBackground />
@@ -121,11 +125,7 @@ function App() {
               </div>
             </div>
 
-            <AddSubscriptionModal
-              isOpen={isAddModalOpen}
-              onClose={() => setIsAddModalOpen(false)}
-              onSuccess={refetch}
-            />
+
 
             {/* Stats Grid */}
             <section aria-labelledby="stats-heading">
@@ -152,12 +152,16 @@ function App() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Subscriptions */}
               <div className="lg:col-span-2">
                 <SubscriptionList
                   subscriptions={data?.subscriptions}
                   onUpdate={refetch}
+                  onEdit={(sub) => {
+                    setEditingSubscription(sub);
+                    setIsAddModalOpen(true);
+                  }}
                 />
               </div>
 
@@ -177,9 +181,22 @@ function App() {
 
       {!isAddModalOpen && activeTab === 'dashboard' && (
         <div className="md:hidden">
-          <RadialMenu onAddSubscription={() => setIsAddModalOpen(true)} />
+          <RadialMenu onAddSubscription={() => {
+            setEditingSubscription(null);
+            setIsAddModalOpen(true);
+          }} />
         </div>
       )}
+
+      <SubscriptionModal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingSubscription(null);
+        }}
+        onSuccess={refetch}
+        subscription={editingSubscription}
+      />
     </DashboardLayout>
   )
 }
