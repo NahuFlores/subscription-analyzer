@@ -216,18 +216,20 @@ def delete_subscription(subscription_id):
 @subscription_bp.route('/seed-demo', methods=['POST'])
 @handle_errors
 def seed_demo_data():
-    """Seed demo data for portfolio showcase"""
-    # This might fail strict validation because demo seed might not use new validations
-    # But let's try to keep it.
+    """Seed demo data for a user (or demo_user if not specified)"""
     from utils.demo_seed import seed_demo_data as do_seed, DEMO_USER_ID
     
-    logger.info("Seeding demo data")
-    result = do_seed(clear_existing=True)
+    # Get user_id from request body or query params
+    data = request.get_json(silent=True) or {}
+    user_id = data.get('user_id') or request.args.get('user_id') or DEMO_USER_ID
+    
+    logger.info(f"Seeding demo data for user: {user_id}")
+    result = do_seed(user_id=user_id, clear_existing=True)
     
     return jsonify({
         'success': result['success'],
         'message': f"Created {result['created']} demo subscriptions",
-        'user_id': DEMO_USER_ID,
+        'user_id': result['user_id'],
         'created': result['created'],
         'cleared': result.get('cleared', 0),
         'errors': result['errors'] if result['errors'] else None

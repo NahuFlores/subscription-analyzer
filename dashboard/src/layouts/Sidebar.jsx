@@ -2,7 +2,7 @@ import { BarChart2, LogOut, Sparkles, Loader2, Check, AlertCircle } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from '../components/ui/GlassCard';
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, USER_ID } from '../config/api';
 
 const Sidebar = ({ isMobileOpen, closeMobile }) => {
     const [activeTab, setActiveTab] = useState('Analytics');
@@ -26,7 +26,8 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
         try {
             const response = await fetch(`${API_BASE_URL}/subscriptions/seed-demo`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: USER_ID })
             });
 
             if (response.ok) {
@@ -194,6 +195,7 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
                 {/* Demo Data Button */}
                 <div className="px-4 pb-2">
                     <button
+                        id="demo-data-btn"
                         onClick={handleLoadDemoData}
                         onMouseEnter={() => setIsDemoBtnHovered(true)}
                         onMouseLeave={() => setIsDemoBtnHovered(false)}

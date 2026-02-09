@@ -7,6 +7,7 @@ import AIInsights from './components/dashboard/AIInsights';
 import ExpenseChart from './components/dashboard/ExpenseChart';
 import CategoryPieChart from './components/dashboard/CategoryPieChart';
 import ReportsSection from './components/dashboard/ReportsSection';
+import OnboardingTour from './components/onboarding/OnboardingTour';
 
 import { useDashboardData } from './hooks/useDashboardData';
 import RadialMenu from './components/ui/RadialMenu';
@@ -110,6 +111,7 @@ function App() {
               {/* Header Actions (Desktop) */}
               <div className="hidden md:flex items-center gap-3">
                 <button
+                  id="add-subscription-btn"
                   onClick={() => {
                     setEditingSubscription(null);
                     setIsAddModalOpen(true);
@@ -128,7 +130,7 @@ function App() {
 
 
             {/* Stats Grid */}
-            <section aria-labelledby="stats-heading">
+            <section id="stats-grid" aria-labelledby="stats-heading">
               <h2 id="stats-heading" className="sr-only">Key Metrics</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statConfig.map((stat, index) => (
@@ -154,7 +156,7 @@ function App() {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Subscriptions */}
-              <div className="lg:col-span-2">
+              <div id="subscription-list" className="lg:col-span-2">
                 <SubscriptionList
                   subscriptions={data?.subscriptions}
                   onUpdate={refetch}
@@ -197,6 +199,9 @@ function App() {
         onSuccess={refetch}
         subscription={editingSubscription}
       />
+
+      {/* Onboarding Tour - Shows only on first visit */}
+      <OnboardingTour />
     </DashboardLayout>
   )
 }

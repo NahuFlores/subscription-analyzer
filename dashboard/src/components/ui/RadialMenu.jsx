@@ -154,6 +154,7 @@ const RadialMenu = ({ onAddSubscription }) => {
 
                 {/* Main Trigger Button */}
                 <button
+                    id="add-subscription-mobile-btn"
                     ref={mainButtonRef}
                     onClick={handleMainButtonClick}
                     onMouseEnter={() => {

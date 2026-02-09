@@ -16,7 +16,26 @@ const getApiBaseUrl = () => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
-export const USER_ID = 'demo_user';
+
+/**
+ * Get or create a unique user ID for this browser session.
+ * Stored in localStorage so it persists across page reloads.
+ * Each browser/device gets its own private subscription data.
+ */
+const getUserId = () => {
+    const STORAGE_KEY = 'subscription_analyzer_user_id';
+    let userId = localStorage.getItem(STORAGE_KEY);
+
+    if (!userId) {
+        // Generate a new UUID using the native crypto API (fast & secure)
+        userId = crypto.randomUUID();
+        localStorage.setItem(STORAGE_KEY, userId);
+    }
+
+    return userId;
+};
+
+export const USER_ID = getUserId();
 
 // Helper function to build API URLs
 export const buildApiUrl = (endpoint) => {

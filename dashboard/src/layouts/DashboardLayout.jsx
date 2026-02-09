@@ -29,6 +29,7 @@ const DashboardLayout = ({ children }) => {
             {/* Mobile Header / Trigger */}
             <div className={`md:hidden fixed top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
                 <button
+                    id="mobile-menu-trigger"
                     onClick={() => setIsMobileOpen(true)}
                     className="pointer-events-auto p-2 rounded-xl bg-white/10 backdrop-blur-lg border border-white/10 text-white shadow-lg active:scale-95 transition-transform"
                 >

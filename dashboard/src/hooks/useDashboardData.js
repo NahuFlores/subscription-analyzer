@@ -108,8 +108,9 @@ export const useDashboardData = () => {
     }, []);
 
     // Silent refetch - updates data without showing loading state
+    // Returns Promise so callers can await completion
     const refetch = useCallback(() => {
-        fetchAllData(false);
+        return fetchAllData(false);
     }, [fetchAllData]);
 
     // Initial load with loading state

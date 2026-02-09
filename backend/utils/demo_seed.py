@@ -111,27 +111,30 @@ DEMO_SUBSCRIPTIONS = [
 ]
 
 
-def seed_demo_data(clear_existing=True):
+def seed_demo_data(user_id=None, clear_existing=True):
     """
-    Seed demo data into Firebase for the demo user
+    Seed demo data into Firebase for a user
     
     Args:
-        clear_existing: If True, removes existing demo user subscriptions first
+        user_id: Target user ID (defaults to DEMO_USER_ID if not provided)
+        clear_existing: If True, removes existing user subscriptions first
     
     Returns:
         dict with success status and count of created subscriptions
     """
+    target_user_id = user_id or DEMO_USER_ID
+    
     results = {
         "success": True,
         "created": 0,
         "errors": [],
-        "user_id": DEMO_USER_ID
+        "user_id": target_user_id
     }
     
     try:
-        # Clear existing demo data if requested
+        # Clear existing data if requested
         if clear_existing:
-            existing = FirebaseHelper.get_user_subscriptions(DEMO_USER_ID)
+            existing = FirebaseHelper.get_user_subscriptions(target_user_id)
             for sub in existing:
                 FirebaseHelper.delete_subscription(sub.get('subscription_id'))
             results["cleared"] = len(existing)
@@ -146,7 +149,7 @@ def seed_demo_data(clear_existing=True):
                 # Create subscription object
                 subscription = SubscriptionFactory.create_subscription(
                     billing_cycle=sub_data["billing_cycle"],
-                    user_id=DEMO_USER_ID,
+                    user_id=target_user_id,
                     name=sub_data["name"],
                     cost=sub_data["cost"],
                     start_date=start_date,

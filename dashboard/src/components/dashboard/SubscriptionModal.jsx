@@ -75,10 +75,7 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
                 throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'add'} subscription`);
             }
 
-            // Success
-            console.log(`✅ Subscription ${isEditing ? 'updated' : 'added'} successfully`);
-
-            // Trigger refresh immediately
+            // Trigger refresh and wait for it to complete before closing
             await onSuccess?.();
 
             // Close

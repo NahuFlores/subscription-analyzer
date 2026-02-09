@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Search, Pencil, Trash2, Plus } from 'lucide-react';
+import { Search, Pencil, Trash2, Plus, Loader2 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -23,11 +23,11 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
     };
 
     const confirmDelete = async () => {
-        if (!subscriptionToDelete) return;
+        if (!subscriptionToDelete || deletingId) return;
 
         const sub = subscriptionToDelete;
         setDeletingId(sub.id);
-        setDeleteModalOpen(false); // Close modal immediately
+        // Keep modal open - don't close until complete
 
         try {
             const response = await fetchWithAuth(`/subscriptions/${sub.id}`, {
@@ -38,8 +38,9 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
                 throw new Error('Failed to delete subscription');
             }
 
+            await onUpdate?.(); // Wait for data refresh to complete
             toast.success(`${sub.name} deleted successfully!`);
-            onUpdate?.(); // Trigger refresh
+            setDeleteModalOpen(false); // Close modal after success
         } catch (err) {
             console.error("Failed to delete subscription:", err);
             toast.error(err.message || "Failed to delete subscription");
@@ -147,7 +148,11 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
                                             title="Delete subscription"
                                             aria-label={`Delete ${sub.name}`}
                                         >
-                                            <Trash2 size={16} />
+                                            {deletingId === sub.id ? (
+                                                <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                                <Trash2 size={16} />
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -186,13 +191,14 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
 
             <ConfirmModal
                 isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
+                onClose={() => !deletingId && setDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
                 title="Delete Subscription?"
                 message={`Are you sure you want to delete ${subscriptionToDelete?.name}? This action cannot be undone.`}
                 confirmText="Delete"
                 cancelText="Cancel"
                 isDangerous={true}
+                loading={!!deletingId}
             />
         </>
     );

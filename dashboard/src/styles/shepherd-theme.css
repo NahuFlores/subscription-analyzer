@@ -1,0 +1,220 @@
+/**
+ * Shepherd.js Custom Theme - Premium Glassmorphism
+ * UI/UX Pro Max: Frosted Glass Overlay & Clean UI
+ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODAL OVERLAY - The "Frosted" Effect
+   ═══════════════════════════════════════════════════════════════════ */
+.shepherd-modal-overlay-container {
+  z-index: 9998 !important;
+  opacity: 0.6 !important;
+  /* Makes the dark overlay see-through */
+  transition: opacity 300ms ease !important;
+}
+
+.shepherd-modal-overlay-container svg path {
+  fill: #050510 !important;
+  /* Deep dark blue/black base */
+}
+
+/* Blur the background content behind the overlay */
+.shepherd-modal-is-visible~*:not(.shepherd-element):not(.shepherd-modal-overlay-container) {
+  transition: filter 300ms ease;
+  filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOOLTIP CONTAINER
+   ═══════════════════════════════════════════════════════════════════ */
+.shepherd-element.shepherd-theme-custom {
+  /* Using custom class */
+  background: rgba(20, 24, 40, 0.85) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 20px 60px -10px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  z-index: 9999 !important;
+  max-width: 400px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ARROW STYLING
+   ═══════════════════════════════════════════════════════════════════ */
+.shepherd-arrow,
+.shepherd-arrow::before {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: rgba(20, 24, 40, 0.85) !important;
+  z-index: -1 !important;
+}
+
+.shepherd-arrow::before {
+  content: '';
+  transform: rotate(45deg);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  /* Remove border on connection side to blend with tooltip */
+  border-top-color: transparent !important;
+  border-left-color: transparent !important;
+}
+
+/* Correct arrow rotation based on placement */
+.shepherd-element[data-popper-placement^='top'] .shepherd-arrow::before {
+  border-top-color: transparent !important;
+  border-left-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.shepherd-element[data-popper-placement^='bottom'] .shepherd-arrow::before {
+  border-bottom-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.shepherd-element[data-popper-placement^='left'] .shepherd-arrow::before {
+  border-bottom-color: transparent !important;
+  border-left-color: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.shepherd-element[data-popper-placement^='right'] .shepherd-arrow::before {
+  border-top-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TYPOGRAPHY & UI
+   ═══════════════════════════════════════════════════════════════════ */
+.shepherd-header {
+  padding: 24px 28px 12px !important;
+  background: transparent !important;
+}
+
+.shepherd-title {
+  color: #fff !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+.shepherd-text {
+  color: #a1a1aa !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  padding: 0 28px 24px !important;
+}
+
+.shepherd-footer {
+  padding: 20px 28px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.shepherd-button {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* Primary Button - Gradient */
+.shepherd-button:not(.shepherd-button-secondary) {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.shepherd-button:not(.shepherd-button-secondary):hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  filter: brightness(1.1);
+}
+
+.shepherd-button:not(.shepherd-button-secondary):active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/* Secondary Button - Glass/Ghost */
+.shepherd-button.shepherd-button-secondary {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #a1a1aa !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.shepherd-button.shepherd-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+/* Modal "spotlight" radius with Pulse Animation */
+.shepherd-target {
+  border-radius: 16px !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+  animation: shepherd-pulse 2s infinite !important;
+}
+
+@keyframes shepherd-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .shepherd-element.shepherd-theme-custom {
+    max-width: calc(100vw - 32px) !important;
+    min-width: auto !important;
+    /* Ensure it doesn't touch edges */
+    margin: 0 !important;
+  }
+
+  .shepherd-header {
+    padding: 16px 20px 8px !important;
+  }
+
+  .shepherd-title {
+    font-size: 1.1rem !important;
+  }
+
+  .shepherd-text {
+    padding: 0 20px 16px !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .shepherd-footer {
+    padding: 16px 20px !important;
+    flex-direction: row !important;
+    /* Keep buttons inline if possible */
+    gap: 8px !important;
+  }
+
+  .shepherd-button {
+    padding: 10px 16px !important;
+    font-size: 0.85rem !important;
+    width: auto !important;
+    flex: 1;
+    /* Distribute space evenly */
+  }
+}
