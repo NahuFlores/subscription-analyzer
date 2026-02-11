@@ -119,7 +119,7 @@ function App() {
                     setEditingSubscription(null);
                     setIsAddModalOpen(true);
                   }}
-                  className="btn-3d group relative flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-medium overflow-hidden"
+                  className="btn-3d group relative flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-medium overflow-hidden cursor-pointer"
                 >
                   <WaveBackground />
                   <div className="relative z-10 flex items-center gap-2">

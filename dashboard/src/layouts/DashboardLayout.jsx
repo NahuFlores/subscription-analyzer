@@ -1,7 +1,7 @@
 
 import Sidebar from './Sidebar';
 import AppBackground from '../components/ui/AppBackground';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 
@@ -39,9 +39,20 @@ const DashboardLayout = ({ children, hideNavigation = false }) => {
                 </div>
             )}
 
-            {!hideNavigation && (
-                <Sidebar isMobileOpen={isMobileOpen} closeMobile={() => setIsMobileOpen(false)} />
-            )}
+            <AnimatePresence mode="wait">
+                {!hideNavigation && (
+                    <motion.div
+                        key="sidebar"
+                        initial={{ x: -100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -100, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                        className="fixed z-40 h-full"
+                    >
+                        <Sidebar isMobileOpen={isMobileOpen} closeMobile={() => setIsMobileOpen(false)} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Main Content Area - Responsive Padding */}
             {/* If navigation is hidden, remove the left padding reserve for sidebar */}

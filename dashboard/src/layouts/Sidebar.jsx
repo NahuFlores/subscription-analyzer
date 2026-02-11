@@ -9,7 +9,7 @@ const Sidebar = ({ isMobileOpen, closeMobile }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isLogoutBtnHovered, setIsLogoutBtnHovered] = useState(false);
     const [isDemoBtnHovered, setIsDemoBtnHovered] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
     const [demoStatus, setDemoStatus] = useState('idle'); // idle, loading, success, error
 
     useEffect(() => {

@@ -73,8 +73,8 @@ const LiquidModal = ({
                         }}
                         className={twMerge(`
                             relative w-full max-w-lg overflow-hidden
-                            bg-[#0f1218]/80 
-                            backdrop-blur-2xl saturate-150
+                            bg-[#0f1218]/30 
+                            backdrop-blur-xl saturate-150
                             border border-white/10 rounded-[32px]
                             shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]
                             flex flex-col
@@ -83,7 +83,7 @@ const LiquidModal = ({
                             // Apply the SVG filter for true liquid refraction
                             // Note: backdrop-filter support for SVG is limited, so we use filter on the container
                             // combined with a backdrop-filter on the background.
-                            boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05)"
+                            boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5), inset 0 0 24px rgba(255,255,255,0.02), inset 0 0.5px 0.5px rgba(255,255,255,0.2)"
                         }}
                     >
                         {/* Noise Texture for Premium Feel */}
