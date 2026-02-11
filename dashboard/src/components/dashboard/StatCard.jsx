@@ -1,13 +1,18 @@
 import GlassCard from '../ui/GlassCard';
 
-const StatCard = ({ label, value, subtext, icon: Icon, color, delay = 0 }) => {
+const StatCard = ({ label, value, subtext, icon: Icon, color, delay = 0, onClick }) => {
     return (
         <GlassCard
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay }}
             hoverEffect={false}
-            className="relative p-6 flex flex-col justify-between overflow-hidden group border border-white/5 hover:border-white/20 cursor-default select-none"
+            onClick={onClick}
+            className={`
+                relative p-6 flex flex-col justify-between overflow-hidden group border border-white/5 
+                ${onClick ? 'cursor-pointer hover:border-white/30 hover:bg-white/5 active:scale-[0.98]' : 'cursor-default hover:border-white/20'}
+                select-none transition-all duration-300
+            `}
         >
             {/* Shimmer Effect */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/5 to-transparent z-10 pointer-events-none" />

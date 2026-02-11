@@ -7,6 +7,7 @@ import AIInsights from './components/dashboard/AIInsights';
 import ExpenseChart from './components/dashboard/ExpenseChart';
 import CategoryPieChart from './components/dashboard/CategoryPieChart';
 import ReportsSection from './components/dashboard/ReportsSection';
+import CalendarModal from './components/dashboard/CalendarModal';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 
 import { useDashboardData } from './hooks/useDashboardData';
@@ -19,6 +20,7 @@ import DashboardSkeleton from './components/dashboard/DashboardSkeleton';
 function App() {
   const { data, loading, refetch } = useDashboardData();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'reports'
 
@@ -61,7 +63,8 @@ function App() {
       value: data?.upcoming_payments?.length || 0,
       subtext: 'Next 7 days',
       icon: Calendar,
-      color: '#ec4899' // Pink
+      color: '#ec4899', // Pink
+      onClick: () => setIsCalendarOpen(true)
     }
   ];
 
@@ -71,7 +74,7 @@ function App() {
   ];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout hideNavigation={isCalendarOpen}>
       <div className="space-y-6">
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 border-b border-white/10 pb-4">
@@ -143,6 +146,8 @@ function App() {
               </div>
             </section>
 
+            {/* Payment Calendar Removed (Now in Modal) */}
+
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
@@ -181,7 +186,7 @@ function App() {
         )}
       </div>
 
-      {!isAddModalOpen && activeTab === 'dashboard' && (
+      {!isAddModalOpen && !isCalendarOpen && activeTab === 'dashboard' && (
         <div className="md:hidden">
           <RadialMenu onAddSubscription={() => {
             setEditingSubscription(null);
@@ -198,6 +203,12 @@ function App() {
         }}
         onSuccess={refetch}
         subscription={editingSubscription}
+      />
+
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        subscriptions={data?.subscriptions || []}
       />
 
       {/* Onboarding Tour - Shows only on first visit */}

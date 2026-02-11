@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * LiquidModal - Premium UI/UX Component
@@ -70,15 +71,14 @@ const LiquidModal = ({
                             duration: 0.3,
                             ease: [0.23, 1, 0.32, 1] // Efficient "easeOutQuint"ish curve
                         }}
-                        className={`
+                        className={twMerge(`
                             relative w-full max-w-lg overflow-hidden
                             bg-[#0f1218]/80 
                             backdrop-blur-2xl saturate-150
                             border border-white/10 rounded-[32px]
                             shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]
                             flex flex-col
-                            ${className}
-                        `}
+                        `, className)}
                         style={{
                             // Apply the SVG filter for true liquid refraction
                             // Note: backdrop-filter support for SVG is limited, so we use filter on the container

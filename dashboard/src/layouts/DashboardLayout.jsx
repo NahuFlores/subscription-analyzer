@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = ({ children, hideNavigation = false }) => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
@@ -26,21 +26,26 @@ const DashboardLayout = ({ children }) => {
             {/* Background Shader - GrainGradient */}
             <AppBackground />
 
-            {/* Mobile Header / Trigger */}
-            <div className={`md:hidden fixed top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
-                <button
-                    id="mobile-menu-trigger"
-                    onClick={() => setIsMobileOpen(true)}
-                    className="pointer-events-auto p-2 rounded-xl bg-white/10 backdrop-blur-lg border border-white/10 text-white shadow-lg active:scale-95 transition-transform"
-                >
-                    <Menu size={24} />
-                </button>
-            </div>
+            {/* Mobile Header / Trigger - Hidden if hideNavigation is true */}
+            {!hideNavigation && (
+                <div className={`md:hidden fixed top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
+                    <button
+                        id="mobile-menu-trigger"
+                        onClick={() => setIsMobileOpen(true)}
+                        className="pointer-events-auto p-2 rounded-xl bg-white/10 backdrop-blur-lg border border-white/10 text-white shadow-lg active:scale-95 transition-transform"
+                    >
+                        <Menu size={24} />
+                    </button>
+                </div>
+            )}
 
-            <Sidebar isMobileOpen={isMobileOpen} closeMobile={() => setIsMobileOpen(false)} />
+            {!hideNavigation && (
+                <Sidebar isMobileOpen={isMobileOpen} closeMobile={() => setIsMobileOpen(false)} />
+            )}
 
             {/* Main Content Area - Responsive Padding */}
-            <main className="relative z-10 p-4 pt-20 md:pt-4 md:pl-32 min-h-screen">
+            {/* If navigation is hidden, remove the left padding reserve for sidebar */}
+            <main className={`relative z-10 p-4 pt-20 md:pt-4 min-h-screen ${hideNavigation ? '' : 'md:pl-32'}`}>
                 <div className="max-w-7xl mx-auto flex flex-col gap-8">
                     {children}
                 </div>
