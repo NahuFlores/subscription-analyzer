@@ -19,26 +19,17 @@ def index():
 @main_bp.route('/dashboard/<path:path>')
 def dashboard(path=''):
     """Serve the React dashboard SPA"""
-    # Pointing to dashboard/dist relative to backend/app.py location
-    # Since this file is in backend/routes/, we go up one level relative to app root
-    # or rely on a config or helper.
-    # Original logic used __file__ relative to app.py.
-    
-    # Best practice: Use current_app.root_path or configured path
-    # But for now, let's replicate logic relative to backend root
-    
-    # We assume 'backend' is the root of the python app context
+    # Verify dashboard build exists
     dashboard_folder = os.path.join(current_app.root_path, '../dashboard/dist')
     dashboard_folder = os.path.abspath(dashboard_folder)
     
-    # Check if dashboard/dist exists
     if not os.path.exists(dashboard_folder):
         return jsonify({
             'error': 'Dashboard not built',
             'message': 'Run "cd dashboard && npm run build" to build the dashboard'
         }), 503
     
-    # Try to serve specific file if it exists (for assets)
+    # Serve specific asset if it exists
     if path:
         file_path = os.path.join(dashboard_folder, path)
         if os.path.isfile(file_path):

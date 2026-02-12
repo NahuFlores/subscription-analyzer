@@ -1,4 +1,7 @@
-
+"""
+AI Routes - Endpoints for LLM-based analysis (e.g., using Groq/Llama)
+Distinct from deterministic analytics in analytics_routes.py
+"""
 from flask import Blueprint, jsonify, request
 from models import Subscription, User
 from analytics.ai_advisor import AIAdvisor
@@ -13,6 +16,10 @@ advisor = AIAdvisor()
 
 @ai_bp.route('/analyze', methods=['POST'])
 def analyze_portfolio():
+    """
+    Generate AI insights using LLM.
+    Combines hard statistics with AI qualitative analysis.
+    """
     try:
         data = request.get_json()
         user_id = data.get('user_id')

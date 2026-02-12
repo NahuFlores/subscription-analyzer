@@ -17,110 +17,34 @@ subscription_bp = Blueprint('subscriptions', __name__, url_prefix='/api/subscrip
 @require_user_id(location='args')
 @handle_errors
 def get_subscriptions():
-    """Get all subscriptions for a user"""
+    """Get all subscriptions (delegates to Service Layer)"""
     user_id = request.validated_user_id
     
     logger.info(f"Fetching subscriptions for user: {user_id}")
     
-    # Get subscriptions from Firebase
-    subscriptions_data = FirebaseHelper.get_user_subscriptions(user_id)
+    from services.subscription_service import SubscriptionService
     
-    # Convert to subscription objects
-    subscriptions = []
-    for data in subscriptions_data:
-        try:
-            sub = SubscriptionFactory.from_dict(data)
-            subscriptions.append(sub.to_dict())
-        except Exception as e:
-            logger.error(f"Error converting subscription data: {e}")
-            # Continue with valid subscriptions
+    success, result, status_code = SubscriptionService.get_subscriptions(user_id)
     
-    return jsonify({
-        'success': True,
-        'subscriptions': subscriptions,
-        'count': len(subscriptions)
-    }), 200
+    return jsonify(result), status_code
 
 
 @subscription_bp.route('', methods=['POST'])
 @require_user_id(location='json')
 @handle_errors
 def create_subscription():
-    """Create a new subscription with strict validation"""
+    """Create a new subscription (delegates to Service Layer)"""
     user_id = request.validated_user_id
     data = request.get_json()
     
     logger.info(f"Create subscription request for user: {user_id}")
     
-    # Validate Inputs
-    name = Validator.sanitize_string(data.get('name'), 'name', max_length=100)
-    cost = Validator.validate_number(data.get('cost'), 'cost', min_val=0, max_val=10000)
+    # Delegate to Service Layer (Pure Clean Code)
+    from services.subscription_service import SubscriptionService
     
-    billing_cycle = Validator.validate_choice(
-        data.get('billing_cycle'),
-        ['monthly', 'annual', 'custom'],
-        'billing_cycle'
-    )
+    success, result, status_code = SubscriptionService.create_subscription(user_id, data)
     
-    start_date = Validator.validate_datetime(
-        data.get('start_date'), 
-        'start_date',
-        allow_future=True
-    )
-    
-    # Optional fields
-    category = data.get('category')
-    if category:
-        category = Validator.sanitize_string(category, 'category', max_length=50)
-    else:
-        # Auto-categorize
-        from models import Category
-        category = Category.auto_categorize(name)
-        
-    notes = data.get('notes', '')
-    if notes:
-        notes = Validator.sanitize_string(notes, 'notes', max_length=500)
-    
-    # Handle custom days
-    custom_days = None
-    if billing_cycle == 'custom':
-        custom_days = int(Validator.validate_number(
-            data.get('custom_days'), 
-            'custom_days', 
-            min_val=1, 
-            max_val=365
-        ))
-
-    # Create & Save
-    subscription_params = {
-        'billing_cycle': billing_cycle,
-        'user_id': user_id,
-        'name': name,
-        'cost': cost,
-        'start_date': start_date,
-        'category': category,
-        'notes': notes
-    }
-    
-    if custom_days:
-        subscription_params['custom_days'] = custom_days
-    
-    subscription = SubscriptionFactory.create_subscription(**subscription_params)
-    success = FirebaseHelper.create_subscription(subscription.to_dict())
-    
-    if success:
-        logger.info(f"Successfully created subscription {subscription.subscription_id}")
-        return jsonify({
-            'success': True,
-            'subscription': subscription.to_dict(),
-            'message': 'Subscription created successfully'
-        }), 201
-    else:
-        logger.error("Failed to save subscription to Firebase")
-        return jsonify({
-            'success': False,
-            'message': 'Failed to save subscription'
-        }), 500
+    return jsonify(result), status_code
 
 
 @subscription_bp.route('/<subscription_id>', methods=['GET'])
@@ -145,48 +69,22 @@ def get_subscription(subscription_id):
 @verify_ownership(FirebaseHelper.get_subscription)
 @handle_errors
 def update_subscription(subscription_id):
-    """Update a subscription with ownership verification"""
+    """Update a subscription (delegates to Service Layer)"""
     # request.verified_resource is set by @verify_ownership
     existing_data = request.verified_resource
     data = request.get_json()
     
     logger.info(f"Update subscription {subscription_id} request")
     
-    # Update fields with validation
-    if 'cost' in data:
-        existing_data['cost'] = Validator.validate_number(data['cost'], 'cost', min_val=0)
+    from services.subscription_service import SubscriptionService
     
-    if 'name' in data:
-        existing_data['name'] = Validator.sanitize_string(data['name'], 'name', max_length=100)
-        
-    if 'category' in data:
-        existing_data['category'] = Validator.sanitize_string(data['category'], 'category', max_length=50)
-        
-    if 'is_active' in data:
-        existing_data['is_active'] = bool(data['is_active'])
-        
-    if 'notes' in data:
-         existing_data['notes'] = Validator.sanitize_string(data['notes'], 'notes', max_length=500)
+    success, result, status_code = SubscriptionService.update_subscription(
+        subscription_id, 
+        data, 
+        existing_data
+    )
     
-    # Update timestamp
-    existing_data['updated_at'] = datetime.now().isoformat()
-    
-    # Save to Firebase
-    success = FirebaseHelper.update_subscription(subscription_id, existing_data)
-    
-    if success:
-        subscription = SubscriptionFactory.from_dict(existing_data)
-        logger.info(f"Successfully updated subscription {subscription_id}")
-        return jsonify({
-            'success': True,
-            'subscription': subscription.to_dict(),
-            'message': 'Subscription updated successfully'
-        }), 200
-    else:
-        return jsonify({
-            'success': False,
-            'message': 'Failed to update subscription'
-        }), 500
+    return jsonify(result), status_code
 
 
 @subscription_bp.route('/<subscription_id>', methods=['DELETE'])
@@ -194,23 +92,15 @@ def update_subscription(subscription_id):
 @verify_ownership(FirebaseHelper.get_subscription)
 @handle_errors
 def delete_subscription(subscription_id):
-    """Delete a subscription with ownership verification"""
+    """Delete a subscription (delegates to Service Layer)"""
     # Ownership already verified by decorator
     logger.info(f"Delete subscription {subscription_id} request")
     
-    success = FirebaseHelper.delete_subscription(subscription_id)
+    from services.subscription_service import SubscriptionService
     
-    if success:
-        logger.info(f"Successfully deleted subscription {subscription_id}")
-        return jsonify({
-            'success': True,
-            'message': 'Subscription deleted successfully'
-        }), 200
-    else:
-        return jsonify({
-            'success': False,
-            'message': 'Failed to delete subscription'
-        }), 500
+    success, result, status_code = SubscriptionService.delete_subscription(subscription_id)
+    
+    return jsonify(result), status_code
 
 
 @subscription_bp.route('/seed-demo', methods=['POST'])

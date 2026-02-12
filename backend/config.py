@@ -26,6 +26,10 @@ class Config:
     
     # Firebase configuration
     FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH', '')
+
+    # AI Configuration
+    GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+    AI_MODEL_NAME = os.getenv('AI_MODEL_NAME', 'llama3-70b-8192')
     
     # CORS configuration - dynamically set based on environment
     @staticmethod
