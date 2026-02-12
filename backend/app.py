@@ -62,9 +62,13 @@ def create_app(config_class=Config):
     # Initialize Firebase
     FirebaseHelper.initialize(config_class.FIREBASE_CREDENTIALS_PATH)
     
-    # Register blueprints
-    app.register_blueprint(subscription_bp)
-    app.register_blueprint(analytics_bp)
+    from routes.subscription_routes import subscription_bp
+    from routes.analytics_routes import analytics_bp
+    from routes.ai import ai_bp
+
+    app.register_blueprint(subscription_bp, url_prefix='/api/subscriptions')
+    app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
+    app.register_blueprint(ai_bp, url_prefix='/api/ai')
     app.register_blueprint(main_bp)
     
     # Error handlers
