@@ -73,7 +73,7 @@ export const useDashboardData = () => {
                 stats: {
                     total_cost: summaryData.analytics?.statistics?.total_monthly_cost || 0,
                     active_subs: summaryData.analytics?.statistics?.active_subscriptions || 0,
-                    potential_savings: summaryData.analytics?.potential_savings?.total_potential_monthly_savings || 0,
+                    potential_savings: summaryData.analytics?.potential_savings || { total_potential_monthly_savings: 0, opportunities: [] },
                 },
                 subscriptions: (subsData.subscriptions || []).map(sub => ({
                     ...sub,

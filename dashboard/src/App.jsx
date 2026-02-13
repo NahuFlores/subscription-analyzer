@@ -8,6 +8,7 @@ import ExpenseChart from './components/dashboard/ExpenseChart';
 import CategoryPieChart from './components/dashboard/CategoryPieChart';
 import ReportsSection from './components/dashboard/ReportsSection';
 import CalendarModal from './components/dashboard/CalendarModal';
+import SavingsModal from './components/dashboard/SavingsModal';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 
 import { useDashboardData } from './hooks/useDashboardData';
@@ -21,7 +22,9 @@ function App() {
   const { data, loading, refetch } = useDashboardData();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isSavingsModalOpen, setIsSavingsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'reports'
 
   if (loading) {
@@ -53,10 +56,11 @@ function App() {
     },
     {
       label: 'Potential Savings',
-      value: formatCurrency(data?.stats?.potential_savings || 0),
+      value: formatCurrency(data?.stats?.potential_savings?.total_potential_monthly_savings || 0),
       subtext: 'Identify unused services',
       icon: TrendingDown,
-      color: '#10b981' // Emerald
+      color: '#10b981', // Emerald
+      onClick: () => setIsSavingsModalOpen(true)
     },
     {
       label: 'Upcoming Payments',
@@ -73,8 +77,24 @@ function App() {
     { id: 'reports', label: 'Data Science Reports', icon: FileBarChart }
   ];
 
+  const handleSavingsAction = (opp) => {
+    setIsSavingsModalOpen(false);
+
+    if (opp.type === 'duplicate_category') {
+      setCategoryFilter(opp.category);
+      // Optional: Scroll to list
+      document.getElementById('subscription-list')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (opp.subscription) {
+      const sub = data.subscriptions.find(s => s.name === opp.subscription);
+      if (sub) {
+        setEditingSubscription(sub);
+        setIsAddModalOpen(true);
+      }
+    }
+  };
+
   return (
-    <DashboardLayout hideNavigation={isCalendarOpen}>
+    <DashboardLayout hideNavigation={isCalendarOpen || isSavingsModalOpen}>
       <div className="space-y-6">
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 border-b border-white/10 pb-4">
@@ -165,6 +185,8 @@ function App() {
                 <SubscriptionList
                   subscriptions={data?.subscriptions}
                   onUpdate={refetch}
+                  categoryFilter={categoryFilter}
+                  onClearFilter={() => setCategoryFilter(null)}
                   onEdit={(sub) => {
                     setEditingSubscription(sub);
                     setIsAddModalOpen(true);
@@ -186,7 +208,7 @@ function App() {
         )}
       </div>
 
-      {!isAddModalOpen && !isCalendarOpen && activeTab === 'dashboard' && (
+      {!isAddModalOpen && !isCalendarOpen && !isSavingsModalOpen && activeTab === 'dashboard' && (
         <div className="md:hidden">
           <RadialMenu onAddSubscription={() => {
             setEditingSubscription(null);
@@ -209,6 +231,13 @@ function App() {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         subscriptions={data?.subscriptions || []}
+      />
+
+      <SavingsModal
+        isOpen={isSavingsModalOpen}
+        onClose={() => setIsSavingsModalOpen(false)}
+        savingsData={data?.stats?.potential_savings}
+        onAction={handleSavingsAction}
       />
 
       {/* Onboarding Tour - Shows only on first visit */}

@@ -15,6 +15,7 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
         name: '',
         cost: '',
         category: 'Entertainment',
+        billing_cycle: 'monthly',
         renewal_date: ''
     });
 
@@ -25,6 +26,7 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
                 name: subscription.name || '',
                 cost: subscription.cost || '',
                 category: subscription.category || 'Entertainment',
+                billing_cycle: subscription.billing_cycle || 'monthly',
                 renewal_date: subscription.next_billing_date || subscription.next_billing || ''
             });
         } else if (isOpen && !subscription) {
@@ -33,6 +35,7 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
                 name: '',
                 cost: '',
                 category: 'Entertainment',
+                billing_cycle: 'monthly',
                 renewal_date: ''
             });
         }
@@ -49,7 +52,7 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
                 name: formData.name,
                 cost: parseFloat(formData.cost),
                 category: formData.category,
-                billing_cycle: 'monthly',
+                billing_cycle: formData.billing_cycle,
                 start_date: formData.renewal_date || new Date().toISOString().split('T')[0]
             };
 
@@ -189,6 +192,20 @@ const SubscriptionModal = ({ isOpen, onClose, onSuccess, subscription = null }) 
                                 <option value="Other" className="bg-[#1a1a1a]">Other</option>
                             </select>
                         </div>
+                    </div>
+
+                    {/* Billing Cycle */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/70 ml-1">Billing Cycle</label>
+                        <select
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all appearance-none cursor-pointer hover:bg-white/8"
+                            value={formData.billing_cycle}
+                            onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value })}
+                            disabled={isSubmitting}
+                        >
+                            <option value="monthly" className="bg-[#1a1a1a]">Monthly</option>
+                            <option value="annual" className="bg-[#1a1a1a]">Yearly (Annual)</option>
+                        </select>
                     </div>
 
                     {/* Date */}

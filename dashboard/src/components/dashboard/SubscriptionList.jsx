@@ -6,16 +6,20 @@ import toast from 'react-hot-toast';
 import { fetchWithAuth } from '../../config/api';
 import ConfirmModal from '../ui/ConfirmModal';
 
-const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
+const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit, categoryFilter, onClearFilter }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [deletingId, setDeletingId] = useState(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [subscriptionToDelete, setSubscriptionToDelete] = useState(null);
 
-    const filteredSubs = subscriptions.filter(sub =>
-        sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSubs = subscriptions.filter(sub => {
+        const matchesSearch = sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            sub.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = categoryFilter ? sub.category === categoryFilter : true;
+
+        return matchesSearch && matchesCategory;
+    });
 
     const handleDeleteClick = (sub) => {
         setSubscriptionToDelete(sub);
@@ -85,6 +89,24 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
                     </div>
                 </div>
 
+                {/* Filter Banner */}
+                {categoryFilter && (
+                    <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <span className="text-sm text-white">
+                                Reviewing <span className="font-bold text-primary">{categoryFilter}</span> subscriptions
+                            </span>
+                        </div>
+                        <button
+                            onClick={onClearFilter}
+                            className="text-xs font-bold text-primary hover:text-white px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
+                        >
+                            Clear Filter
+                        </button>
+                    </div>
+                )}
+
                 {/* List */}
                 <div className="overflow-y-auto custom-scrollbar space-y-3 pr-2 flex-1">
                     {filteredSubs.length > 0 ? (
@@ -128,7 +150,16 @@ const SubscriptionList = ({ subscriptions = [], onUpdate, onEdit }) => {
                                     {/* Cost */}
                                     <div className="text-left sm:text-right transition-transform duration-300 sm:group-hover:-translate-x-[96px]">
                                         <div className="font-bold text-white text-xl tracking-tight">${sub.cost.toFixed(2)}</div>
-                                        <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-60">{sub.billing_cycle}</div>
+                                        <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-60">
+                                            {(() => {
+                                                const labels = {
+                                                    monthly: '/ mo',
+                                                    annual: '/ yr',
+                                                    weekly: '/ wk'
+                                                };
+                                                return labels[sub.billing_cycle] || `/${sub.billing_cycle}`;
+                                            })()}
+                                        </div>
                                     </div>
 
                                     {/* Action Buttons */}
