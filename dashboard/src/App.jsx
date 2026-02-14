@@ -12,9 +12,10 @@ import SavingsModal from './components/dashboard/SavingsModal';
 import OnboardingTour from './components/onboarding/OnboardingTour';
 
 import { useDashboardData } from './hooks/useDashboardData';
+import { AlertsProvider } from './hooks/useAlerts.jsx';
 import RadialMenu from './components/ui/RadialMenu';
 import { DollarSign, CreditCard, TrendingDown, Calendar, LayoutDashboard, FileBarChart, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import DashboardSkeleton from './components/dashboard/DashboardSkeleton';
 
@@ -26,6 +27,7 @@ function App() {
   const [editingSubscription, setEditingSubscription] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'reports'
+  const returnToSavingsRef = useRef(false);
 
   if (loading) {
     return (
@@ -45,14 +47,16 @@ function App() {
       value: formatCurrency(data?.stats?.total_cost || 0),
       subtext: 'Based on active subscriptions',
       icon: DollarSign,
-      color: '#6366f1' // Indigo
+      color: '#6366f1', // Indigo
+      onClick: () => document.getElementById('charts-section')?.scrollIntoView({ behavior: 'smooth' })
     },
     {
       label: 'Active Subscriptions',
       value: data?.stats?.active_subs || 0,
       subtext: 'Services currently active',
       icon: CreditCard,
-      color: '#22d3ee' // Cyan
+      color: '#22d3ee', // Cyan
+      onClick: () => document.getElementById('subscription-list')?.scrollIntoView({ behavior: 'smooth' })
     },
     {
       label: 'Potential Savings',
@@ -82,19 +86,50 @@ function App() {
 
     if (opp.type === 'duplicate_category') {
       setCategoryFilter(opp.category);
-      // Optional: Scroll to list
       document.getElementById('subscription-list')?.scrollIntoView({ behavior: 'smooth' });
     } else if (opp.subscription) {
       const sub = data.subscriptions.find(s => s.name === opp.subscription);
       if (sub) {
+        returnToSavingsRef.current = true;
         setEditingSubscription(sub);
         setIsAddModalOpen(true);
       }
     }
   };
 
+  const handleAlertAction = (alert) => {
+    setActiveTab('dashboard');
+
+    switch (alert.type) {
+      case 'upcoming_payment':
+        setIsCalendarOpen(true);
+        break;
+
+      case 'savings_opportunity':
+        setIsSavingsModalOpen(true);
+        break;
+
+      case 'cost_spike': {
+        const subName = alert.metadata?.subscription_name;
+        const sub = data?.subscriptions?.find(s => s.name === subName);
+        if (sub) {
+          setEditingSubscription(sub);
+          setIsAddModalOpen(true);
+        }
+        break;
+      }
+
+      case 'unused_subscription':
+        document.getElementById('subscription-list')?.scrollIntoView({ behavior: 'smooth' });
+        break;
+
+      default:
+        break;
+    }
+  };
+
   return (
-    <DashboardLayout hideNavigation={isCalendarOpen || isSavingsModalOpen}>
+    <DashboardLayout hideNavigation={isCalendarOpen || isSavingsModalOpen} onAlertAction={handleAlertAction}>
       <div className="space-y-6">
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 border-b border-white/10 pb-4">
@@ -169,7 +204,7 @@ function App() {
             {/* Payment Calendar Removed (Now in Modal) */}
 
             {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div id="charts-section" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <ExpenseChart data={data?.charts?.expenseTrend} />
               </div>
@@ -222,8 +257,18 @@ function App() {
         onClose={() => {
           setIsAddModalOpen(false);
           setEditingSubscription(null);
+          returnToSavingsRef.current = false;
         }}
-        onSuccess={refetch}
+        onSuccess={() => {
+          refetch().then(() => {
+            if (returnToSavingsRef.current) {
+              returnToSavingsRef.current = false;
+              setIsAddModalOpen(false);
+              setEditingSubscription(null);
+              setTimeout(() => setIsSavingsModalOpen(true), 300);
+            }
+          });
+        }}
         subscription={editingSubscription}
       />
 
@@ -246,4 +291,10 @@ function App() {
   )
 }
 
-export default App
+const AppWithProviders = () => (
+  <AlertsProvider>
+    <App />
+  </AlertsProvider>
+);
+
+export default AppWithProviders;

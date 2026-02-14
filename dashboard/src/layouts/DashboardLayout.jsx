@@ -1,11 +1,12 @@
 
 import Sidebar from './Sidebar';
 import AppBackground from '../components/ui/AppBackground';
+import NotificationBell from '../components/dashboard/NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Menu } from 'lucide-react';
 
-const DashboardLayout = ({ children, hideNavigation = false }) => {
+const DashboardLayout = ({ children, hideNavigation = false, onAlertAction }) => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
@@ -36,6 +37,9 @@ const DashboardLayout = ({ children, hideNavigation = false }) => {
                     >
                         <Menu size={24} />
                     </button>
+                    <div className="pointer-events-auto">
+                        <NotificationBell onAction={onAlertAction} />
+                    </div>
                 </div>
             )}
 
@@ -53,6 +57,13 @@ const DashboardLayout = ({ children, hideNavigation = false }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Desktop Notification Bell - Fixed Top Right */}
+            {!hideNavigation && (
+                <div className="hidden md:block fixed top-4 right-6 z-50">
+                    <NotificationBell onAction={onAlertAction} />
+                </div>
+            )}
 
             {/* Main Content Area - Responsive Padding */}
             {/* If navigation is hidden, remove the left padding reserve for sidebar */}
